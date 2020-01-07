@@ -106,8 +106,16 @@ public class Solution implements Serializable {
     public String toString() {
         return "Solution{" + "id=" + id + ", instances=" + instances + ", shifts=" + shifts + '}';
     }
-
+    
     /* M E T H O D S */
+    public void solutionTriviale(int indexInstance){
+        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+            Shift s = new Shift();
+            s.ajouterTournee(t);
+            this.ajouterShift(s);
+        }
+    }
+    
     public void ajouterInstance(String chemin){
         try {
             InstanceReader ir = new InstanceReader(chemin);
@@ -116,6 +124,11 @@ public class Solution implements Serializable {
         } catch (ReaderException ex) {
             Logger.getLogger(Solution.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void ajouterShift(Shift s){
+        s.setSolution(this);
+        this.shifts.add(s);
     }
     
     public static void main(String[] args) {
@@ -129,6 +142,8 @@ public class Solution implements Serializable {
                 Solution s = new Solution();
                 s.ajouterInstance("./resources/instances/instance_test.csv");
                 System.out.println("instances " + s.instances);
+                s.solutionTriviale(0);
+                System.out.println("shifts " + s.shifts);
                 em.persist(s);
                 et.commit();
             }
