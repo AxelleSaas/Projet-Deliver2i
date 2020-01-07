@@ -52,7 +52,7 @@ public class ListeInstances extends javax.swing.JFrame {
        
     private void remplirListeInstances() {
         DefaultListModel list = new DefaultListModel();
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf = Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         try{
            Query query = em.createNamedQuery("Instance.findAll");
@@ -186,6 +186,7 @@ public class ListeInstances extends javax.swing.JFrame {
                     Instance i = (Instance)obj;
                     s.getInstances().add(i);
                     s.solutionTriviale(0);
+                    System.out.println(s);
                     break;
             }
         
@@ -217,6 +218,7 @@ public class ListeInstances extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ListeInstances.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */

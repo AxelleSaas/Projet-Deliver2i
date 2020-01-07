@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package modele;
-
 import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
@@ -92,7 +91,26 @@ public class Shift implements Serializable {
         this.solution = solution;
     }
 
-    
+    public int calcTempsMort(int dureeMin) {
+        boolean premier = true;
+        Tournee tourneePrec = this.tournees.get(0);
+        int temps = 0;
+        if (this.tournees.size() == 1) {
+            return (int) (dureeMin - (tourneePrec.getFin().getTime() - tourneePrec.getDebut().getTime()));
+        }
+        for (Tournee t : this.tournees) {
+            if (premier)
+                premier = false;
+            else {
+                if (t.getDebut().getTime() > tourneePrec.getDebut().getTime())
+                    temps += t.getDebut().getTime() - tourneePrec.getFin().getTime();
+                else
+                    return -1;
+            }
+            tourneePrec = t;
+        }
+        return temps;
+    }
 
 
     /* E Q U A L S   E T   H A S H C O D E */    
@@ -128,12 +146,12 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
-    public boolean addTournee (Tournee tournee) {
+    public boolean ajouterTournee (Tournee tournee) {
         int index = 0;
         if (!this.tournees.isEmpty()) {
             Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
             if (tournee.getDebut().after(derniereTournee.getDebut())) {
-                // On insère la tournée dans la liste
+                // On insÃ¨re la tournÃ©e dans la liste
                 this.tournees.add(tournee);
                 return true;
             }
@@ -144,7 +162,7 @@ public class Shift implements Serializable {
     }
     
     public static void main(String[] args) throws ReaderException {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
 
         try{
