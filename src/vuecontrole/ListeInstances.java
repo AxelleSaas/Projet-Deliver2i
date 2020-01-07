@@ -20,17 +20,21 @@ import javax.persistence.Query;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 import modele.Instance;
+import modele.Solution;
+import modele.Tournee;
 
 /**
  *
  * @author Axelle
  */
 public class ListeInstances extends javax.swing.JFrame {
-
     /**
      * Creates new form ListeInstances
      */
+    
+    private List<Instance> instances;
     public ListeInstances() {
         initComponents();
         this.initialisationFenetre();
@@ -42,6 +46,8 @@ public class ListeInstances extends javax.swing.JFrame {
         this.setLocation(300, 300);
         this.setTitle("Gestion des instances");
         this.getContentPane().setBackground(Color.LIGHT_GRAY);
+        listeInstancesSauv.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listeSolutions.addItem("Solution triviale");
     }
        
     private void remplirListeInstances() {
@@ -49,10 +55,16 @@ public class ListeInstances extends javax.swing.JFrame {
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
         final EntityManager em = emf.createEntityManager();
         try{
-           Query query = em.createNamedQuery("Instance.findAllName");
-           List<String> listeObjInstance = query.getResultList();
-           for(String str : listeObjInstance) {
-               list.addElement(str);
+           Query query = em.createNamedQuery("Instance.findAll");
+           List<Instance> listeObjInstance = query.getResultList();
+           for(Instance i : listeObjInstance) {
+               Query query2 = em.createNamedQuery("Tournee.getTourneeByInstanceId");
+               query2.setParameter("id", i);
+               List<Tournee> listeTournee = query2.getResultList();
+               for(Tournee t : listeTournee){
+                   i.getTournees().add(t);
+               }
+               list.addElement(i);
                listeInstancesSauv.setModel(list);
            }
         } 
@@ -79,9 +91,12 @@ public class ListeInstances extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         listeInstancesSauv = new javax.swing.JList<>();
         ajoutInstance = new javax.swing.JButton();
+        listeSolutions = new javax.swing.JComboBox<>();
+        ajoutSolution = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        listeInstancesSauv.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane1.setViewportView(listeInstancesSauv);
 
         ajoutInstance.setText("Ajouter une instance");
@@ -91,16 +106,27 @@ public class ListeInstances extends javax.swing.JFrame {
             }
         });
 
+        ajoutSolution.setText("Tester une solution");
+        ajoutSolution.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ajoutSolutionActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(23, 23, 23)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(ajoutInstance)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(listeSolutions, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -108,8 +134,12 @@ public class ListeInstances extends javax.swing.JFrame {
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ajoutInstance)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(81, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(listeSolutions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ajoutSolution))
+                .addContainerGap(75, Short.MAX_VALUE))
         );
 
         pack();
@@ -144,6 +174,23 @@ public class ListeInstances extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_ajoutInstanceActionPerformed
+
+    private void ajoutSolutionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajoutSolutionActionPerformed
+        // TODO add your handling code here:
+        Solution s = new Solution();
+        if(!listeInstancesSauv.isSelectionEmpty()){
+            
+            switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
+                case "Solution triviale":
+                    Object obj = listeInstancesSauv.getSelectedValue();
+                    Instance i = (Instance)obj;
+                    s.getInstances().add(i);
+                    s.solutionTriviale(0);
+                    break;
+            }
+        
+        } 
+    }//GEN-LAST:event_ajoutSolutionActionPerformed
 
     /**
      * @param args the command line arguments
@@ -182,7 +229,9 @@ public class ListeInstances extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ajoutInstance;
+    private javax.swing.JButton ajoutSolution;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList<String> listeInstancesSauv;
+    private javax.swing.JComboBox<String> listeSolutions;
     // End of variables declaration//GEN-END:variables
 }

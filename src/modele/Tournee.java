@@ -18,6 +18,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Persistence;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -26,6 +27,9 @@ import javax.persistence.TemporalType;
  *
  * @author Axelle
  */
+
+@NamedQuery(name="Tournee.getTourneeByInstanceId",
+            query = "SELECT t FROM Tournee t WHERE t.instance = :id ")
 @Entity
 public class Tournee implements Serializable {
 

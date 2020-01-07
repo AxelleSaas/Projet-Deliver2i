@@ -37,7 +37,9 @@ import javax.persistence.TemporalType;
  */
 @NamedQueries({
     @NamedQuery(name="Instance.findAllName",
-            query = "SELECT i.nom FROM Instance i")
+            query = "SELECT i.nom, i.id FROM Instance i"),
+    @NamedQuery(name="Instance.findAll",
+            query = "SELECT i FROM Instance i")
 })
 @Entity
 public class Instance implements Serializable {
@@ -194,7 +196,7 @@ public class Instance implements Serializable {
     /* T O S T R I N G */
     @Override
     public String toString() {
-        return "Instance{" + "id=" + id + ", nom=" + nom + ", dureeMinimale=" + dureeMinimale + ", dureeMaximale=" + dureeMaximale + ", date=" + date + ", tournees=" + tournees + '}';
+        return "Instance " + nom ;
     }
 
     /* M E T H O D S */
@@ -210,7 +212,7 @@ public class Instance implements Serializable {
                 Instance i = ir.readInstance();
                 em.persist(i);
                 Shift shift = new Shift();
-                shift.addTournee(i.getTournees().get(0));
+                shift.ajouterTournee(i.getTournees().get(0));
                 i.getTournees().get(0).setShift(shift);
                 em.persist(shift);
                 et.commit();
