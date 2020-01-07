@@ -91,7 +91,26 @@ public class Shift implements Serializable {
         this.solution = solution;
     }
 
-    
+    public int calcTempsMort(int dureeMin) {
+        boolean premier = true;
+        Tournee tourneePrec = this.tournees.get(0);
+        int temps = 0;
+        if (this.tournees.size() == 1) {
+            return (int) (dureeMin - (tourneePrec.getFin().getTime() - tourneePrec.getDebut().getTime()));
+        }
+        for (Tournee t : this.tournees) {
+            if (premier)
+                premier = false;
+            else {
+                if (t.getDebut().getTime() > tourneePrec.getDebut().getTime())
+                    temps += t.getDebut().getTime() - tourneePrec.getFin().getTime();
+                else
+                    return -1;
+            }
+            tourneePrec = t;
+        }
+        return temps;
+    }
 
 
     /* E Q U A L S   E T   H A S H C O D E */    
