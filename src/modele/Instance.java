@@ -201,7 +201,7 @@ public class Instance implements Serializable {
 
     /* M E T H O D S */
     public static void main(String[] args) throws ReaderException {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
 

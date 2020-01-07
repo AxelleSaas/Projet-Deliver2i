@@ -132,7 +132,7 @@ public class Solution implements Serializable {
     }
     
     public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
 
         try{

@@ -146,12 +146,12 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
-    public boolean addTournee (Tournee tournee) {
+    public boolean ajouterTournee (Tournee tournee) {
         int index = 0;
         if (!this.tournees.isEmpty()) {
             Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
             if (tournee.getDebut().after(derniereTournee.getDebut())) {
-                // On insère la tournée dans la liste
+                // On insÃ¨re la tournÃ©e dans la liste
                 this.tournees.add(tournee);
                 return true;
             }
