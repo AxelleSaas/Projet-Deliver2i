@@ -161,7 +161,7 @@ public class Tournee implements Serializable {
     
     /* M E T H O D S */
     public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
         final EntityManager em = emf.createEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();

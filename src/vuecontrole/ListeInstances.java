@@ -149,7 +149,7 @@ public class ListeInstances extends javax.swing.JFrame {
         JFileChooser chooser = new JFileChooser();
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
             String chemin = chooser.getSelectedFile().getAbsolutePath();
-            final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
+            final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
             final EntityManager em = emf.createEntityManager();
             try{
                 final EntityTransaction et = em.getTransaction();
@@ -186,6 +186,7 @@ public class ListeInstances extends javax.swing.JFrame {
                     Instance i = (Instance)obj;
                     s.getInstances().add(i);
                     s.solutionTriviale(0);
+                    System.out.println(s);
                     break;
             }
         
@@ -217,8 +218,6 @@ public class ListeInstances extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ListeInstances.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
