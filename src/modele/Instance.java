@@ -9,6 +9,8 @@ import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +58,7 @@ public class Instance implements Serializable {
     @Column(nullable = false)
     private int dureeMinimale;
     
-     @Column(nullable = false)
+    @Column(nullable = false)
     private int dureeMaximale;
     
     @Column(nullable = false)
@@ -147,8 +149,6 @@ public class Instance implements Serializable {
         this.solution = solution;
     }
     
-    
-    
 
     /* E Q U A L S   E T   H A S H C O D E */
     @Override
@@ -212,7 +212,7 @@ public class Instance implements Serializable {
                 Instance i = ir.readInstance();
                 em.persist(i);
                 Shift shift = new Shift();
-                shift.ajouterTournee(i.getTournees().get(0));
+                shift.ajouterTournee(i.getTournees().get(0), i.getDureeMinimale(), i.getDureeMaximale());
                 i.getTournees().get(0).setShift(shift);
                 em.persist(shift);
                 et.commit();
@@ -229,5 +229,14 @@ public class Instance implements Serializable {
                 emf.close();
             }
         }
+    }
+    
+    public void trier () {
+        Collections.sort(tournees, new Comparator<Tournee>() {
+            @Override
+            public int compare(Tournee t1, Tournee t2) {
+                return t1.getDebut().compareTo(t2.getDebut());
+            }
+        });
     }
 }
