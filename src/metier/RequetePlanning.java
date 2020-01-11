@@ -26,7 +26,7 @@ public class RequetePlanning {
 
     /* C O N S T R U C T E U R S */
     private RequetePlanning() {
-        System.out.println("creation d'un nouveau");
+        System.out.println("Creation de l'entityManagerFactory");
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("javax.persistence.jdbc.user", "Deliver2i");
         properties.put("javax.persistence.jdbc.password", "poo");
