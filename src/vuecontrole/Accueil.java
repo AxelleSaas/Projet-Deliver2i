@@ -13,8 +13,6 @@ import metier.RequetePlanning;
  * @author Axelle
  */
 public class Accueil extends javax.swing.JFrame {
-    private RequetePlanning requetePlanning;
-
     /**
      * Creates new form Accueil
      */

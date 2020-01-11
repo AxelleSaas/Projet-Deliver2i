@@ -15,7 +15,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import modele.Instance;
 import javax.persistence.Persistence;
-import static metier.RequetePlanning.entityManager;
 
 /**
  *
@@ -27,7 +26,7 @@ public class RequetePlanning {
 
     /* C O N S T R U C T E U R S */
     private RequetePlanning() {
-        System.out.println("creation d'un nouveau");
+        System.out.println("Creation de l'entityManagerFactory");
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("javax.persistence.jdbc.user", "Deliver2i");
         properties.put("javax.persistence.jdbc.password", "poo");
@@ -38,14 +37,6 @@ public class RequetePlanning {
     public EntityManagerFactory getEntityManagerFactory() {
         return entityManagerFactory;
     }
-   
-    public EntityManagerFactory entityManagerFactory;
-    public EntityManager entityManager;
-    private static RequetePlanning instance;
-
-    private RequetePlanning() {
-        this.connect();
-    }
     
     public static RequetePlanning getInstance() {
         if(instance == null)
@@ -53,7 +44,7 @@ public class RequetePlanning {
         return instance;
     }  
     
-    private void close() {
+    public void close() {
         if(this.entityManagerFactory != null && this.entityManagerFactory.isOpen()){
             this.entityManagerFactory.close();
         }
