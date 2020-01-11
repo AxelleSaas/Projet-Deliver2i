@@ -88,7 +88,6 @@ public class Tournee implements Serializable {
     public void setFin(Date fin) {
         this.fin = fin;
     }
-
     
     public Date getDebut() {
         return debut;
@@ -155,7 +154,7 @@ public class Tournee implements Serializable {
 
     @Override
     public String toString() {
-        return "Tournee{" + "id=" + id + ", fin=" + fin + ", debut=" + debut + ", instance=" + instance.getNom() + "}\n";
+        return "Tournee{" + "id=" + id + ", debut=" + debut + ", fin=" + fin + ", instance=" + instance.getNom() + "}\n";
     }
 
     
@@ -186,5 +185,7 @@ public class Tournee implements Serializable {
         }
     }
     
-    
+    public long duree() {
+        return (int) (this.getFin().getTime() - this.getDebut().getTime())/1000/60;
+    }
 }

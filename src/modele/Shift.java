@@ -36,7 +36,7 @@ public class Shift implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private int tempsMort;
+    private long tempsMort;
     
     @OneToMany(mappedBy="shift", cascade = {
         CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
@@ -67,11 +67,11 @@ public class Shift implements Serializable {
         this.id = id;
     }
 
-    public int getTempsMort() {
+    public long getTempsMort() {
         return tempsMort;
     }
 
-    public void setTempsMort(int tempsMort) {
+    public void setTempsMort(long tempsMort) {
         this.tempsMort = tempsMort;
     }
 
@@ -90,28 +90,6 @@ public class Shift implements Serializable {
     public void setSolution(Solution solution) {
         this.solution = solution;
     }
-
-    public int calcTempsMort(int dureeMin) {
-        boolean premier = true;
-        Tournee tourneePrec = this.tournees.get(0);
-        int temps = 0;
-        if (this.tournees.size() == 1) {
-            return (int) (dureeMin - (tourneePrec.getFin().getTime() - tourneePrec.getDebut().getTime()));
-        }
-        for (Tournee t : this.tournees) {
-            if (premier)
-                premier = false;
-            else {
-                if (t.getDebut().getTime() > tourneePrec.getDebut().getTime())
-                    temps += t.getDebut().getTime() - tourneePrec.getFin().getTime();
-                else
-                    return -1;
-            }
-            tourneePrec = t;
-        }
-        return temps;
-    }
-
 
     /* E Q U A L S   E T   H A S H C O D E */    
     @Override
@@ -146,19 +124,53 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
-    public boolean ajouterTournee (Tournee tournee) {
+    public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
         if (!this.tournees.isEmpty()) {
             Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
-            if (tournee.getDebut().after(derniereTournee.getDebut())) {
+            if (tournee.getDebut().after(derniereTournee.getFin()) && this.duree() < dureeMax) {
                 // On insÃ¨re la tournÃ©e dans la liste
                 this.tournees.add(tournee);
+                this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
                 return true;
             }
             return false;
         }
         this.tournees.add(tournee);
+        this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
         return true;
+    }
+    
+    public long calcTempsMort(int dureeMin) {
+        boolean premier = true;
+        Tournee tourneePrec = this.tournees.get(0);
+        long temps = 0;
+        if (this.tournees.size() == 1) {
+            temps = (dureeMin - tourneePrec.duree());
+            this.setTempsMort(temps);
+            return (temps);
+        }
+        for (Tournee t : this.tournees) {
+            if (premier)
+                premier = false;
+            else {
+                if (t.getDebut().getTime() > tourneePrec.getDebut().getTime())
+                    temps += t.getDebut().getTime() - tourneePrec.getFin().getTime();
+                else
+                    return -1;
+            };
+            tourneePrec = t;
+        }
+        temps = temps/1000/60;
+        this.setTempsMort(temps);
+        return temps;
+    }
+    
+    public long duree() {
+        long t = 0;
+        if(!this.getTournees().isEmpty())
+            t = this.getTournees().get(this.getTournees().size()-1).getFin().getTime() - this.getTournees().get(0).getDebut().getTime();
+        return (int) (t/60/1000) ;
     }
     
     public static void main(String[] args) throws ReaderException {
@@ -169,7 +181,12 @@ public class Shift implements Serializable {
             final EntityTransaction et = em.getTransaction();
             try{
                 et.begin();
-                
+                Solution s = new Solution();
+                Solution s1 = new Solution();
+                s.ajouterInstance("./resources/instances/instance_test.csv");
+                s.solutionBasique(0);
+                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
+                em.persist(s);
                 et.commit();
             }
             catch (Exception ex) {
@@ -184,6 +201,5 @@ public class Shift implements Serializable {
                 emf.close();
             }
         }
-    }
-        
+    }        
 }
