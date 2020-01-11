@@ -115,6 +115,10 @@ public class Accueil extends javax.swing.JFrame {
             }
         });
     }
+    
+    private void initConnexion()  {
+        this.requetePlanning = requetePlanning.getInstance();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton savedInstances;

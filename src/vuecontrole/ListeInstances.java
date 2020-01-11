@@ -37,7 +37,7 @@ public class ListeInstances extends javax.swing.JFrame {
     private RequetePlanning requetePlanning;
     
     private List<Instance> instances;
-        
+  
     public ListeInstances() {
         initConnexion();
         initComponents();
@@ -188,7 +188,6 @@ public class ListeInstances extends javax.swing.JFrame {
         
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
-
     
     /**
      * @param args the command line arguments
