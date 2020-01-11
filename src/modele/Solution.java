@@ -23,6 +23,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Persistence;
+import metier.RequetePlanning;
 
 /**
  *
@@ -166,15 +167,16 @@ public class Solution implements Serializable {
     public static void main(String[] args) {
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
-
+        RequetePlanning rp = RequetePlanning.getInstance();
+        final EntityManager em = rp.getEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();
             try{
                 et.begin();
                 Solution s = new Solution();
                 Solution s1 = new Solution();
-                s.ajouterInstance("./resources/instances/instance_3.csv");
-                s1.ajouterInstance("./resources/instances/instance_3.csv");
+                s.ajouterInstance("./resources/instances/instance_test.csv");
+                s1.ajouterInstance("./resources/instances/instance_test.csv");
                 s.solutionBasique(0);
                 s1.solutionTriviale(0);
                 System.out.println(s);
@@ -200,9 +202,7 @@ public class Solution implements Serializable {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
+            rp.close();
         }
     }
     
