@@ -37,6 +37,9 @@ public class ListeInstances extends javax.swing.JFrame {
     private RequetePlanning requetePlanning;
     
     private List<Instance> instances;
+    
+    RequetePlanning requetePlanning;
+    
     public ListeInstances() {
         initConnexion();
         initComponents();
@@ -187,7 +190,11 @@ public class ListeInstances extends javax.swing.JFrame {
         
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
-
+    
+    private void initConnexion()  {
+        this.requetePlanning = requetePlanning.getInstance();
+    }
+    
     /**
      * @param args the command line arguments
      */

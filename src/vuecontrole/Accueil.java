@@ -13,6 +13,7 @@ import metier.RequetePlanning;
  * @author Axelle
  */
 public class Accueil extends javax.swing.JFrame {
+    private RequetePlanning requetePlanning;
 
     /**
      * Creates new form Accueil
@@ -30,7 +31,7 @@ public class Accueil extends javax.swing.JFrame {
         this.requetePlanning = requetePlanning.getInstance();
     }
 
-    private void initialisationFenetre(){
+    private void initialisationFenetre() {
         this.setVisible(true);
         this.setLocation(300, 300);
         this.setTitle("Accueil");
@@ -115,6 +116,10 @@ public class Accueil extends javax.swing.JFrame {
                 new Accueil().setVisible(true);
             }
         });
+    }
+    
+    private void initConnexion()  {
+        this.requetePlanning = requetePlanning.getInstance();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

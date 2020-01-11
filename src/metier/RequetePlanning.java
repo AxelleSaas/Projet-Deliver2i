@@ -14,6 +14,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import modele.Instance;
+import javax.persistence.Persistence;
+import static metier.RequetePlanning.entityManager;
 
 /**
  *
@@ -37,6 +39,14 @@ public class RequetePlanning {
         return entityManagerFactory;
     }
    
+    public EntityManagerFactory entityManagerFactory;
+    public EntityManager entityManager;
+    private static RequetePlanning instance;
+
+    private RequetePlanning() {
+        this.connect();
+    }
+    
     public static RequetePlanning getInstance() {
         if(instance == null)
             instance = new RequetePlanning();
