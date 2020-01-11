@@ -6,22 +6,27 @@
 package vuecontrole;
 
 import java.awt.Color;
+import java.sql.SQLException;
+import javax.swing.JOptionPane;
+import metier.RequetePlanning;
 
 /**
  *
  * @author Axelle
  */
 public class Accueil extends javax.swing.JFrame {
+    private RequetePlanning requetePlanning;
 
     /**
      * Creates new form Accueil
      */
     public Accueil() {
+        this.initConnexion();
         initComponents();
         this.initialisationFenetre();
     }
 
-    private void initialisationFenetre(){
+    private void initialisationFenetre() {
         this.setVisible(true);
         this.setLocation(300, 300);
         this.setTitle("Accueil");
@@ -106,6 +111,10 @@ public class Accueil extends javax.swing.JFrame {
                 new Accueil().setVisible(true);
             }
         });
+    }
+    
+    private void initConnexion()  {
+        this.requetePlanning = requetePlanning.getInstance();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

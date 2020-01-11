@@ -21,6 +21,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
+import metier.RequetePlanning;
 import modele.Instance;
 import modele.Solution;
 import modele.Tournee;
@@ -35,7 +36,11 @@ public class ListeInstances extends javax.swing.JFrame {
      */
     
     private List<Instance> instances;
+    
+    RequetePlanning requetePlanning;
+    
     public ListeInstances() {
+        this.initConnexion();
         initComponents();
         this.initialisationFenetre();
         this.remplirListeInstances();
@@ -149,17 +154,23 @@ public class ListeInstances extends javax.swing.JFrame {
         JFileChooser chooser = new JFileChooser();
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
             String chemin = chooser.getSelectedFile().getAbsolutePath();
-            final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
-            final EntityManager em = emf.createEntityManager();
+            final EntityManager em = this.requetePlanning.getEntityManager();
             try{
                 final EntityTransaction et = em.getTransaction();
+                System.out.println(et);
                 try{
+                    System.out.println("le debut ouais");
                     et.begin();
                     InstanceReader ir = new InstanceReader(chemin);
+                    System.out.println("bien sur");
                     em.persist(ir.readInstance());
+                    System.out.println("mais voyons");
                     et.commit();
+                    System.out.println("fini");
                 }
                 catch (Exception ex) {
+                    System.out.println(em);
+                    System.out.println("Exception : " + ex);
                     et.rollback();
                 }
             } 
@@ -167,10 +178,7 @@ public class ListeInstances extends javax.swing.JFrame {
                 if(em != null && em.isOpen()){
                     em.close();
                 }
-                if(emf != null && emf.isOpen()){
-                    emf.close();
-                    this.remplirListeInstances();
-                }
+                this.requetePlanning.close();
             }
         }
     }//GEN-LAST:event_ajoutInstanceActionPerformed
@@ -192,7 +200,11 @@ public class ListeInstances extends javax.swing.JFrame {
         
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
-
+    
+    private void initConnexion()  {
+        this.requetePlanning = requetePlanning.getInstance();
+    }
+    
     /**
      * @param args the command line arguments
      */
