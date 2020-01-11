@@ -6,6 +6,7 @@
 package vuecontrole;
 
 import java.awt.Color;
+import metier.RequetePlanning;
 
 /**
  *
@@ -16,9 +17,17 @@ public class Accueil extends javax.swing.JFrame {
     /**
      * Creates new form Accueil
      */
+    
+    private RequetePlanning requetePlanning;
+    
     public Accueil() {
+        initConnexion();
         initComponents();
         this.initialisationFenetre();
+    }
+    
+    private void initConnexion() {
+        this.requetePlanning = requetePlanning.getInstance();
     }
 
     private void initialisationFenetre(){
