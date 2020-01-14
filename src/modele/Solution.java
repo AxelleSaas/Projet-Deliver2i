@@ -228,5 +228,4 @@ public class Solution implements Serializable {
             rp.close();
         }
     }
-    
 }
