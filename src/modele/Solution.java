@@ -134,6 +134,31 @@ public class Solution implements Serializable {
             }
             // On n'a pû l'ajouter dans aucun shift
             if (!ajout) {
+                Shift shTemp = new Shift();
+                shTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
+                this.ajouterShift(shTemp);
+            }
+        }
+    }
+    
+    public void solutionIntermediaire(int indexInstance){
+        boolean ajout = false;
+        
+        Instance instance = this.instances.get(indexInstance);
+        instance.trier();
+        
+        this.ajouterShift(new Shift());
+        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+            ajout = false;
+            for (Shift s : this.getShifts()) {
+                // Si on l'ajoute, on arrete la boucle
+                if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
+                    ajout = true;
+                    break;
+                }
+            }
+            // On n'a pû l'ajouter dans aucun shift
+            if (!ajout) {
                 Shift sTemp = new Shift();
                 sTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
                 this.ajouterShift(sTemp);
@@ -173,8 +198,8 @@ public class Solution implements Serializable {
                 et.begin();
                 Solution s = new Solution();
                 Solution s1 = new Solution();
-                s.ajouterInstance("./resources/instances/instance_3.csv");
-                s1.ajouterInstance("./resources/instances/instance_4.csv");
+                s.ajouterInstance("./resources/instances/instance_1.csv");
+                s1.ajouterInstance("./resources/instances/instance_1.csv");
                 s.solutionBasique(0);
                 s1.solutionTriviale(0);
                 System.out.println(s);
