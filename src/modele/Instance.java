@@ -14,8 +14,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,7 +23,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -41,7 +39,10 @@ import javax.persistence.TemporalType;
     @NamedQuery(name="Instance.findAllName",
             query = "SELECT i.nom, i.id FROM Instance i"),
     @NamedQuery(name="Instance.findAll",
-            query = "SELECT i FROM Instance i")
+            query = "SELECT i FROM Instance i"),
+    @NamedQuery(name="Instance.findInstanceById",
+            query = "SELECT i FROM Instance i WHERE i.id = :id"),
+    
 })
 @Entity
 public class Instance implements Serializable {
@@ -50,6 +51,7 @@ public class Instance implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "INSTANCE_ID")
     private Long id;
     
     @Column(nullable = false)
@@ -70,8 +72,8 @@ public class Instance implements Serializable {
     })
     private List<Tournee> tournees;
     
-    @ManyToOne
-    private Solution solution;
+    @ManyToMany(mappedBy = "instances")
+    private List<Solution> solutions;
     
     /* C O N S T R U C T E U R S */
     public Instance() {
@@ -80,7 +82,7 @@ public class Instance implements Serializable {
         this.dureeMinimale = 0;
         this.dureeMaximale = 0;
         this.tournees = new ArrayList<>();
-        this.solution = null;
+        this.solutions = new ArrayList<>();
     }
 
     public Instance(String nom, int dureeMinimale, int dureeMaximale, Date date) {
@@ -141,13 +143,15 @@ public class Instance implements Serializable {
         this.tournees = tournees;
     }
 
-    public Solution getSolution() {
-        return solution;
+    public List<Solution> getSolutions() {
+        return solutions;
     }
 
-    public void setSolution(Solution solution) {
-        this.solution = solution;
+    public void setSolutions(List<Solution> solutions) {
+        this.solutions = solutions;
     }
+
+    
     
 
     /* E Q U A L S   E T   H A S H C O D E */
@@ -200,6 +204,7 @@ public class Instance implements Serializable {
     }
 
     /* M E T H O D S */
+    
     public static void main(String[] args) throws ReaderException {
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
@@ -212,8 +217,10 @@ public class Instance implements Serializable {
                 Instance i = ir.readInstance();
                 em.persist(i);
                 Shift shift = new Shift();
+
                 shift.ajouterTournee(i.getTournees().get(0), i.getDureeMinimale(), i.getDureeMaximale());
                 i.getTournees().get(0).setShift(shift);
+
                 em.persist(shift);
                 et.commit();
             }

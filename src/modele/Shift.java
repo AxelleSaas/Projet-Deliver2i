@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 package modele;
+
 import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
@@ -12,10 +13,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,6 +39,11 @@ import javax.persistence.Persistence;
  *
  * @author Axelle
  */
+
+@NamedQueries({
+    @NamedQuery(name="Shift.getShiftBySolutionId",
+                query = "SELECT shift FROM Shift shift WHERE shift.solution = :id ")
+})
 @Entity
 public class Shift implements Serializable {
 
@@ -34,13 +51,19 @@ public class Shift implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+
+    @Column(name = "SHIFT_ID")
     private Long id;
 
-    private long tempsMort;
+    private int tempsMort;
     
-    @OneToMany(mappedBy="shift", cascade = {
-        CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+
+        @ManyToMany( fetch = FetchType.EAGER)
+    @JoinTable(name = "SHIFT_TOURNEE",
+            joinColumns = @JoinColumn(name = "SHIFT_ID", referencedColumnName="SHIFT_ID"),
+            inverseJoinColumns = @JoinColumn(name  = "TOURNEE_ID",referencedColumnName="TOURNEE_ID")
+    )
+
     private List<Tournee> tournees;
     
     @ManyToOne
@@ -67,6 +90,7 @@ public class Shift implements Serializable {
         this.id = id;
     }
 
+
     public long getTempsMort() {
         return tempsMort;
     }
@@ -90,6 +114,7 @@ public class Shift implements Serializable {
     public void setSolution(Solution solution) {
         this.solution = solution;
     }
+
 
     /* E Q U A L S   E T   H A S H C O D E */    
     @Override
@@ -124,6 +149,7 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
+
     public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
         if (!this.tournees.isEmpty()) {
@@ -150,6 +176,7 @@ public class Shift implements Serializable {
                 // On insÃ¨re la tournÃ©e dans la liste
                 this.tournees.add(tournee);
                 this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+
                 return true;
             }
             return false;

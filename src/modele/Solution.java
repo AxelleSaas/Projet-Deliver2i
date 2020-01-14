@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -21,14 +22,23 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Persistence;
-import metier.RequetePlanning;
 
 /**
  *
  * @author Axelle
  */
+@NamedQueries({
+    @NamedQuery(name="Solution.findAll",
+            query = "SELECT s FROM Solution s")
+    
+})
 @Entity
 public class Solution implements Serializable {
 
@@ -36,11 +46,14 @@ public class Solution implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "SOLUTION_ID")
     private Long id;
 
-    @OneToMany(mappedBy="solution", cascade = {
-        CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+    @ManyToMany
+    @JoinTable(name = "SOLUTION_INSTANCE",
+            joinColumns = @JoinColumn(name = "SOLUTION_ID", referencedColumnName="SOLUTION_ID"),
+            inverseJoinColumns = @JoinColumn(name  = "INSTANCE_ID",referencedColumnName="INSTANCE_ID")
+    )
     private List<Instance> instances;
     
     @OneToMany(mappedBy="solution", cascade = {
@@ -53,6 +66,7 @@ public class Solution implements Serializable {
         this.instances = new ArrayList<>();
         this.shifts = new ArrayList<>();
     }
+    
     
     /* A C C E S S E U R S   E T   M U T A T E U R S */
     public Long getId() {
@@ -79,6 +93,7 @@ public class Solution implements Serializable {
         this.shifts = shifts;
     }
 
+    
     /* E Q U A L S   E T   H A S H C O D E */   
     @Override
     public int hashCode() {
@@ -103,19 +118,31 @@ public class Solution implements Serializable {
     /* T O S T R I N G */
     @Override
     public String toString() {
-        return "Solution{" + "id=" + id + ", instances=" + instances + ", shifts=" + shifts + '}';
+        return "Solution " + this.id;
     }
     
     /* M E T H O D S */
     public void solutionTriviale(int indexInstance){
-        Instance instance = this.instances.get(indexInstance);
-        for(Tournee t : instance.getTournees()){
+        for(Tournee t : this.instances.get(indexInstance).getTournees()){
             Shift s = new Shift();
-            s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
+            t.getShifts().add(s);
+            s.ajouterTournee(t);
+            
             this.ajouterShift(s);
         }
     }
     
+    public void ajouterInstance(Instance i){
+            this.instances.add(i);
+            i.getSolutions().add(this);
+    }
+    
+    public void ajouterShift(Shift s){
+        s.setSolution(this);
+        this.shifts.add(s);
+    }
+    
+
     public void solutionBasique(int indexInstance){
         boolean ajout = false;
         
@@ -174,20 +201,7 @@ public class Solution implements Serializable {
         return tempsMort;
     }
     
-    public void ajouterInstance(String chemin){
-        try {
-            InstanceReader ir = new InstanceReader(chemin);
-            this.instances.add(ir.readInstance());
-            this.instances.get(this.instances.size()-1).setSolution(this);
-        } catch (ReaderException ex) {
-            Logger.getLogger(Solution.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void ajouterShift(Shift s){
-        s.setSolution(this);
-        this.shifts.add(s);
-    }
+ 
 
     public static void main(String[] args) {
         RequetePlanning rp = RequetePlanning.getInstance();

@@ -6,7 +6,9 @@
 package modele;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -14,12 +16,18 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -27,9 +35,10 @@ import javax.persistence.TemporalType;
  *
  * @author Axelle
  */
-
-@NamedQuery(name="Tournee.getTourneeByInstanceId",
-            query = "SELECT t FROM Tournee t WHERE t.instance = :id ")
+@NamedQueries({
+    @NamedQuery(name="Tournee.getTourneeByInstanceId",
+                query = "SELECT t FROM Tournee t WHERE t.instance = :id ")
+})
 @Entity
 public class Tournee implements Serializable {
 
@@ -37,6 +46,7 @@ public class Tournee implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "TOURNEE_ID")
     private Long id;
 
     @Column(nullable = false)
@@ -50,15 +60,15 @@ public class Tournee implements Serializable {
     @ManyToOne
     private Instance instance;
     
-    @ManyToOne
-    private Shift shift;
+    @ManyToMany(mappedBy="tournees")
+    private List<Shift> shifts;
     
     /* C O N S T R U C T E U R S */
     public Tournee() {
         this.debut = new Date();
         this.fin = new Date();
         this.instance = new Instance();
-        this.shift = null;
+        this.shifts = new ArrayList<>();
     }
 
     public Tournee(Date fin, Date debut, Instance i) {
@@ -105,15 +115,42 @@ public class Tournee implements Serializable {
         this.instance = instance;
     }
 
-    public Shift getShift() {
-        return shift;
+    public List<Shift> getShifts() {
+        return shifts;
     }
 
-    public void setShift(Shift shift) {
-        this.shift = shift;
+    public void setShifts(List<Shift> shifts) {
+        this.shifts = shifts;
     }
-    
-    
+
+
+    public void getTourneesByShift(Shift s){
+        
+         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManager em = emf.createEntityManager();
+
+        try{
+            final EntityTransaction et = em.getTransaction();
+            try{
+                et.begin();
+                
+                et.commit();
+            }
+            catch (Exception ex) {
+                et.rollback();
+            }
+        } 
+        finally {
+            if(em != null && em.isOpen()){
+                em.close();
+            }
+            if(emf != null && emf.isOpen()){
+                emf.close();
+            }
+        }
+        
+
+    }
 
 
     /* E Q U A L S   E T   H A S H C O D E */
