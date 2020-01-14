@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -141,19 +142,92 @@ public class Solution implements Serializable {
         this.shifts.add(s);
     }
     
-    public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
-        final EntityManager em = emf.createEntityManager();
 
+    public void solutionBasique(int indexInstance){
+        boolean ajout = false;
+        
+        Instance instance = this.instances.get(indexInstance);
+        instance.trier();
+        
+        this.ajouterShift(new Shift());
+        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+            ajout = false;
+            for (Shift s : this.getShifts()) {
+                // Si on l'ajoute, on arrete la boucle
+                if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
+                    ajout = true;
+                    break;
+                }
+            }
+            // On n'a pû l'ajouter dans aucun shift
+            if (!ajout) {
+                Shift shTemp = new Shift();
+                shTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
+                this.ajouterShift(shTemp);
+            }
+        }
+    }
+    
+    public void solutionIntermediaire(int indexInstance){
+        boolean ajout = false;
+        
+        Instance instance = this.instances.get(indexInstance);
+        instance.trier();
+        
+        this.ajouterShift(new Shift());
+        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+            ajout = false;
+            for (Shift s : this.getShifts()) {
+                // Si on l'ajoute, on arrete la boucle
+                if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
+                    ajout = true;
+                    break;
+                }
+            }
+            // On n'a pû l'ajouter dans aucun shift
+            if (!ajout) {
+                Shift sTemp = new Shift();
+                sTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
+                this.ajouterShift(sTemp);
+            }
+        }
+    }
+    
+    public int calcTempsMortTotal(int dureeMin){
+        int tempsMort = 0;
+        for (Shift s : this.getShifts()) {
+            tempsMort += s.calcTempsMort(dureeMin);
+        }
+        return tempsMort;
+    }
+    
+ 
+
+    public static void main(String[] args) {
+        RequetePlanning rp = RequetePlanning.getInstance();
+        EntityManager em = rp.getEntityManagerFactory().createEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();
             try{
                 et.begin();
                 Solution s = new Solution();
-                //s.ajouterInstance("./resources/instances/instance_test.csv");
-                System.out.println("instances " + s.instances);
-                s.solutionTriviale(0);
-                System.out.println("shifts " + s.shifts);
+                Solution s1 = new Solution();
+                s.ajouterInstance("./resources/instances/instance_1.csv");
+                s1.ajouterInstance("./resources/instances/instance_1.csv");
+                s.solutionBasique(0);
+                s1.solutionTriviale(0);
+                System.out.println(s);
+                int duree = 0;
+                int duree1 = 0;
+                for (Tournee t : s.getInstances().get(0).getTournees()) {
+                    duree += t.duree();
+                }
+                for (Tournee t : s1.getInstances().get(0).getTournees()) {
+                    duree1 += t.duree();
+                }
+                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                
                 em.persist(s);
                 et.commit();
             }
@@ -165,10 +239,7 @@ public class Solution implements Serializable {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
+            rp.close();
         }
     }
-    
 }

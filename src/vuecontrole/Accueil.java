@@ -6,22 +6,30 @@
 package vuecontrole;
 
 import java.awt.Color;
+import metier.RequetePlanning;
 
 /**
  *
  * @author Axelle
  */
 public class Accueil extends javax.swing.JFrame {
-
     /**
      * Creates new form Accueil
      */
+    
+    private RequetePlanning requetePlanning;
+    
     public Accueil() {
+        initConnexion();
         initComponents();
         this.initialisationFenetre();
     }
+    
+    private void initConnexion() {
+        this.requetePlanning = requetePlanning.getInstance();
+    }
 
-    private void initialisationFenetre(){
+    private void initialisationFenetre() {
         this.setVisible(true);
         this.setLocation(300, 300);
         this.setTitle("Accueil");
@@ -108,6 +116,7 @@ public class Accueil extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(Accueil.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */

@@ -9,6 +9,8 @@ import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -58,7 +60,7 @@ public class Instance implements Serializable {
     @Column(nullable = false)
     private int dureeMinimale;
     
-     @Column(nullable = false)
+    @Column(nullable = false)
     private int dureeMaximale;
     
     @Column(nullable = false)
@@ -151,8 +153,6 @@ public class Instance implements Serializable {
 
     
     
-    
-    
 
     /* E Q U A L S   E T   H A S H C O D E */
     @Override
@@ -206,7 +206,7 @@ public class Instance implements Serializable {
     /* M E T H O D S */
     
     public static void main(String[] args) throws ReaderException {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
 
@@ -217,8 +217,10 @@ public class Instance implements Serializable {
                 Instance i = ir.readInstance();
                 em.persist(i);
                 Shift shift = new Shift();
-                shift.ajouterTournee(i.getTournees().get(0));
-                i.getTournees().get(0).getShifts().add(shift);
+
+                shift.ajouterTournee(i.getTournees().get(0), i.getDureeMinimale(), i.getDureeMaximale());
+                i.getTournees().get(0).setShift(shift);
+
                 em.persist(shift);
                 et.commit();
             }
@@ -234,5 +236,14 @@ public class Instance implements Serializable {
                 emf.close();
             }
         }
+    }
+    
+    public void trier () {
+        Collections.sort(tournees, new Comparator<Tournee>() {
+            @Override
+            public int compare(Tournee t1, Tournee t2) {
+                return t1.getDebut().compareTo(t2.getDebut());
+            }
+        });
     }
 }

@@ -28,6 +28,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Persistence;
 
@@ -35,6 +39,7 @@ import javax.persistence.Persistence;
  *
  * @author Axelle
  */
+
 @NamedQueries({
     @NamedQuery(name="Shift.getShiftBySolutionId",
                 query = "SELECT shift FROM Shift shift WHERE shift.solution = :id ")
@@ -46,6 +51,7 @@ public class Shift implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+
     @Column(name = "SHIFT_ID")
     private Long id;
 
@@ -57,6 +63,7 @@ public class Shift implements Serializable {
             joinColumns = @JoinColumn(name = "SHIFT_ID", referencedColumnName="SHIFT_ID"),
             inverseJoinColumns = @JoinColumn(name  = "TOURNEE_ID",referencedColumnName="TOURNEE_ID")
     )
+
     private List<Tournee> tournees;
     
     @ManyToOne
@@ -83,11 +90,12 @@ public class Shift implements Serializable {
         this.id = id;
     }
 
-    public int getTempsMort() {
+
+    public long getTempsMort() {
         return tempsMort;
     }
 
-    public void setTempsMort(int tempsMort) {
+    public void setTempsMort(long tempsMort) {
         this.tempsMort = tempsMort;
     }
 
@@ -106,8 +114,6 @@ public class Shift implements Serializable {
     public void setSolution(Solution solution) {
         this.solution = solution;
     }
-
-    
 
 
     /* E Q U A L S   E T   H A S H C O D E */    
@@ -143,45 +149,141 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
-    public boolean ajouterTournee (Tournee tournee) {
+
+    public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
-        tournee.getShifts().add(this);
         if (!this.tournees.isEmpty()) {
-            Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
-            if (tournee.getDebut().after(derniereTournee.getDebut())) {
-                // On insère la tournée dans la liste
+            Tournee tourneePrecedente = this.getTournees().get(0);
+            // On vérifie si on peut l'ajouter en premier
+            if (tournee.getFin().getTime() < tourneePrecedente.getDebut().getTime()) {
                 this.tournees.add(tournee);
+                this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+                return true;
+            }
+            // Boucle qui regarde qu'on est après la fin et le debut de la suivante pour aussi inserer au debut et à la fin 
+            for (Tournee tourneeSuivante : this.getTournees().subList(1, this.getTournees().size())) {
+                if (tournee.getDebut().getTime() > tourneePrecedente.getFin().getTime() && tournee.getFin().getTime() < tourneeSuivante.getDebut().getTime()) {
+                    this.tournees.add(tournee);
+                    this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+                    return true;
+                }
+                tourneePrecedente = tourneeSuivante;
+            }
+            
+            //On regarde si on peut ajouter après la dernière tournée
+            Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
+            if (tournee.getDebut().after(derniereTournee.getFin()) && this.duree() < dureeMax) {
+                // On insÃ¨re la tournÃ©e dans la liste
+                this.tournees.add(tournee);
+                this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+
                 return true;
             }
             return false;
         }
         this.tournees.add(tournee);
+        this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
         return true;
     }
     
+    public boolean ajouterTourneeOld (Tournee tournee, long dureeMin, long dureeMax) {
+        int index = 0;
+        if (!this.tournees.isEmpty()) {
+            Tournee derniereTournee = this.tournees.get(this.tournees.size()-1);
+            if (tournee.getDebut().after(derniereTournee.getFin()) && this.duree() < dureeMax) {
+                // On insÃ¨re la tournÃ©e dans la liste
+                this.tournees.add(tournee);
+                this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+                return true;
+            }
+            return false;
+        }
+        this.tournees.add(tournee);
+        this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+        return true;
+    }
+    
+    public long calcTempsMort(int dureeMin) {
+        boolean premier = true;
+        Tournee tourneePrec = this.tournees.get(0);
+        long temps = 0;
+        if (this.tournees.size() == 1) {
+            temps = (dureeMin - tourneePrec.duree());
+            this.setTempsMort(temps);
+            return (temps);
+        }
+        for (Tournee t : this.tournees) {
+            if (premier)
+                premier = false;
+            else {
+                if (t.getDebut().getTime() > tourneePrec.getDebut().getTime())
+                    temps += t.getDebut().getTime() - tourneePrec.getFin().getTime();
+                else
+                    return -1;
+            };
+            tourneePrec = t;
+        }
+        temps = temps/1000/60;
+        this.setTempsMort(temps);
+        return temps;
+    }
+    
+    public long duree() {
+        long t = 0;
+        if(!this.getTournees().isEmpty())
+            t = this.getTournees().get(this.getTournees().size()-1).getFin().getTime() - this.getTournees().get(0).getDebut().getTime();
+        return (int) (t/60/1000) ;
+    }
+    
     public static void main(String[] args) throws ReaderException {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
-        final EntityManager em = emf.createEntityManager();
-
-        try{
-            final EntityTransaction et = em.getTransaction();
-            try{
-                et.begin();
-                
-                et.commit();
+        boolean ajout = false;
+        
+        Solution s = new Solution();
+        Solution s1 = new Solution();
+        s.ajouterInstance("./resources/instances/instance_3.csv");
+        s1.ajouterInstance("./resources/instances/instance_3.csv");
+        Instance i = s.getInstances().get(0);
+        Instance i1 = s1.getInstances().get(0);
+        i.trier();
+        i1.trier();
+        s.ajouterShift(new Shift());
+        s1.ajouterShift(new Shift());
+        for(Tournee t : i.getTournees()){
+            ajout = false;
+            for (Shift sh : s.getShifts()) {
+                // Si on l'ajoute, on arrete la boucle
+                if(sh.ajouterTournee(t, i.getDureeMinimale(), i.getDureeMaximale())) {
+                    ajout = true;
+                    break;
+                }
             }
-            catch (Exception ex) {
-                et.rollback();
-            }
-        } 
-        finally {
-            if(em != null && em.isOpen()){
-                em.close();
-            }
-            if(emf != null && emf.isOpen()){
-                emf.close();
+            // On n'a pû l'ajouter dans aucun shift
+            if (!ajout) {
+                Shift shTemp = new Shift();
+                shTemp.ajouterTournee(t, i.getDureeMinimale(), i.getDureeMaximale());
+                s.ajouterShift(shTemp);
             }
         }
-    }
+        for(Tournee t : i.getTournees()){
+            ajout = false;
+            for (Shift sh : s1.getShifts()) {
+                // Si on l'ajoute, on arrete la boucle
+                if(sh.ajouterTourneeOld(t, i.getDureeMinimale(), i.getDureeMaximale())) {
+                    ajout = true;
+                    break;
+                }
+            }
+            // On n'a pû l'ajouter dans aucun shift
+            if (!ajout) {
+                Shift shTemp = new Shift();
+                shTemp.ajouterTourneeOld(t, i.getDureeMinimale(), i.getDureeMaximale());
+                s1.ajouterShift(shTemp);
+            }
+        }
         
+        System.out.println(s);
+        System.out.println(s1);
+        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
+        System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
+    }        
 }

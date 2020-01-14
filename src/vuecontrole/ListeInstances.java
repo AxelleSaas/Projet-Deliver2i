@@ -17,12 +17,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
+import metier.RequetePlanning;
 import modele.Instance;
 import modele.Solution;
 import modele.Tournee;
 
 /**
- *
  * @author Axelle
  */
 public class ListeInstances extends javax.swing.JFrame {
@@ -30,14 +30,22 @@ public class ListeInstances extends javax.swing.JFrame {
      * Creates new form ListeInstances
      */
     
+    private RequetePlanning requetePlanning;
+    
     private List<Instance> instances;
+  
     public ListeInstances() {
+        initConnexion();
         initComponents();
         this.initialisationFenetre();
         this.remplirListeInstances();
     }
+    
+    private void initConnexion() {
+        this.requetePlanning = requetePlanning.getInstance();
+    }
 
-        private void initialisationFenetre(){
+    private void initialisationFenetre(){
         this.setVisible(true);
         this.setLocation(300, 300);
         this.setTitle("Gestion des instances");
@@ -49,7 +57,7 @@ public class ListeInstances extends javax.swing.JFrame {
     private void remplirListeInstances() {
         DefaultListModel list = new DefaultListModel();
         listeInstancesSauv.setModel(list);
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf = Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         try{
            Query query = em.createNamedQuery("Instance.findAll");
@@ -158,29 +166,16 @@ public class ListeInstances extends javax.swing.JFrame {
         JFileChooser chooser = new JFileChooser();
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
             String chemin = chooser.getSelectedFile().getAbsolutePath();
-            final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
-            final EntityManager em = emf.createEntityManager();
             try{
-                final EntityTransaction et = em.getTransaction();
-                try{
-                    et.begin();
-                    InstanceReader ir = new InstanceReader(chemin);
-                    em.persist(ir.readInstance());
-                    et.commit();
-                    JOptionPane.showMessageDialog(rootPane, "Ajout d'instance réussi.");
-                }
-                catch (Exception ex) {
-                    et.rollback();
-                }
+                InstanceReader ir = new InstanceReader(chemin);
+                this.requetePlanning.ajouterInstance(ir.readInstance());
             } 
+            catch (ReaderException ex) {
+                System.out.println("Erreur de lecture de l'instance");
+                Logger.getLogger(ListeInstances.class.getName()).log(Level.SEVERE, null, ex);
+            }            
             finally {
-                if(em != null && em.isOpen()){
-                    em.close();
-                }
-                if(emf != null && emf.isOpen()){
-                    emf.close();
-                    this.remplirListeInstances();
-                }
+                this.remplirListeInstances();
             }
         }
     }//GEN-LAST:event_ajoutInstanceActionPerformed
@@ -225,6 +220,7 @@ public class ListeInstances extends javax.swing.JFrame {
                     Instance i = (Instance)obj;
                     s.getInstances().add(i);
                     s.solutionTriviale(0);
+                    System.out.println(s);
                     break;
             }
         
@@ -287,6 +283,7 @@ public class ListeInstances extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(ListeInstances.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
