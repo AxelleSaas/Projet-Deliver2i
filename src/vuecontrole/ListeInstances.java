@@ -6,12 +6,8 @@
 package vuecontrole;
 
 import io.InstanceReader;
-import io.exception.ReaderException;
 import java.awt.Color;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -52,6 +48,7 @@ public class ListeInstances extends javax.swing.JFrame {
        
     private void remplirListeInstances() {
         DefaultListModel list = new DefaultListModel();
+        listeInstancesSauv.setModel(list);
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
         final EntityManager em = emf.createEntityManager();
         try{
@@ -93,6 +90,7 @@ public class ListeInstances extends javax.swing.JFrame {
         ajoutInstance = new javax.swing.JButton();
         listeSolutions = new javax.swing.JComboBox<>();
         ajoutSolution = new javax.swing.JButton();
+        supprimerInstance = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -113,6 +111,13 @@ public class ListeInstances extends javax.swing.JFrame {
             }
         });
 
+        supprimerInstance.setText("Supprimer une instance");
+        supprimerInstance.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                supprimerInstanceActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -125,15 +130,19 @@ public class ListeInstances extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                    .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(supprimerInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(ajoutInstance)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(ajoutInstance)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(supprimerInstance))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -158,6 +167,7 @@ public class ListeInstances extends javax.swing.JFrame {
                     InstanceReader ir = new InstanceReader(chemin);
                     em.persist(ir.readInstance());
                     et.commit();
+                    JOptionPane.showMessageDialog(rootPane, "Ajout d'instance réussi.");
                 }
                 catch (Exception ex) {
                     et.rollback();
@@ -182,6 +192,35 @@ public class ListeInstances extends javax.swing.JFrame {
             
             switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
                 case "Solution triviale":
+                    final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+                    final EntityManager em = emf.createEntityManager();
+                    try{
+                        final EntityTransaction et = em.getTransaction();
+                        try{
+                            et.begin();
+                            
+                            Object obj = listeInstancesSauv.getSelectedValue();
+                            Instance i = (Instance)obj;
+                            
+                            s.ajouterInstance(i);
+                            
+                            s.solutionTriviale(0);
+                            em.persist(s);
+                            et.commit();
+                            JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                        }
+                        catch (Exception ex) {
+                            et.rollback();
+                        }
+                    } 
+                    finally {
+                        if(em != null && em.isOpen()){
+                            em.close();
+                        }
+                        if(emf != null && emf.isOpen()){
+                            emf.close();
+                        }
+                    }
                     Object obj = listeInstancesSauv.getSelectedValue();
                     Instance i = (Instance)obj;
                     s.getInstances().add(i);
@@ -191,6 +230,37 @@ public class ListeInstances extends javax.swing.JFrame {
         
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
+
+    private void supprimerInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supprimerInstanceActionPerformed
+         if(!listeInstancesSauv.isSelectionEmpty()){
+            final EntityManagerFactory emf = Persistence.createEntityManagerFactory("persistenceUnit");
+            final EntityManager em = emf.createEntityManager();
+            try{
+                final EntityTransaction et = em.getTransaction();
+                try{
+                    et.begin();
+                    Object obj = listeInstancesSauv.getSelectedValue();
+                    Instance i = (Instance)obj;
+                    Instance it = em.find(Instance.class, i.getId());
+                    em.remove(it);
+                    et.commit();
+                    JOptionPane.showMessageDialog(rootPane, "Supression réussie.");
+                }
+                catch (Exception ex) {
+                    et.rollback();
+                }
+            } 
+            finally {
+                if(em != null && em.isOpen()){
+                    em.close();
+                }
+                if(emf != null && emf.isOpen()){
+                    emf.close();
+                    this.remplirListeInstances();
+                }
+            }
+         }
+    }//GEN-LAST:event_supprimerInstanceActionPerformed
 
     /**
      * @param args the command line arguments
@@ -233,5 +303,6 @@ public class ListeInstances extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList<String> listeInstancesSauv;
     private javax.swing.JComboBox<String> listeSolutions;
+    private javax.swing.JButton supprimerInstance;
     // End of variables declaration//GEN-END:variables
 }

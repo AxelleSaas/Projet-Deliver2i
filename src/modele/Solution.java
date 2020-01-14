@@ -21,6 +21,11 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Persistence;
 
@@ -28,6 +33,11 @@ import javax.persistence.Persistence;
  *
  * @author Axelle
  */
+@NamedQueries({
+    @NamedQuery(name="Solution.findAll",
+            query = "SELECT s FROM Solution s")
+    
+})
 @Entity
 public class Solution implements Serializable {
 
@@ -35,11 +45,14 @@ public class Solution implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "SOLUTION_ID")
     private Long id;
 
-    @OneToMany(mappedBy="solution", cascade = {
-        CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+    @ManyToMany
+    @JoinTable(name = "SOLUTION_INSTANCE",
+            joinColumns = @JoinColumn(name = "SOLUTION_ID", referencedColumnName="SOLUTION_ID"),
+            inverseJoinColumns = @JoinColumn(name  = "INSTANCE_ID",referencedColumnName="INSTANCE_ID")
+    )
     private List<Instance> instances;
     
     @OneToMany(mappedBy="solution", cascade = {
@@ -104,26 +117,23 @@ public class Solution implements Serializable {
     /* T O S T R I N G */
     @Override
     public String toString() {
-        return "Solution{" + "id=" + id + ", instances=" + instances + ", shifts=" + shifts + '}';
+        return "Solution " + this.id;
     }
     
     /* M E T H O D S */
     public void solutionTriviale(int indexInstance){
         for(Tournee t : this.instances.get(indexInstance).getTournees()){
             Shift s = new Shift();
+            t.getShifts().add(s);
             s.ajouterTournee(t);
+            
             this.ajouterShift(s);
         }
     }
     
-    public void ajouterInstance(String chemin){
-        try {
-            InstanceReader ir = new InstanceReader(chemin);
-            this.instances.add(ir.readInstance());
-            this.instances.get(this.instances.size()-1).setSolution(this);
-        } catch (ReaderException ex) {
-            Logger.getLogger(Solution.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void ajouterInstance(Instance i){
+            this.instances.add(i);
+            i.getSolutions().add(this);
     }
     
     public void ajouterShift(Shift s){
@@ -140,7 +150,7 @@ public class Solution implements Serializable {
             try{
                 et.begin();
                 Solution s = new Solution();
-                s.ajouterInstance("./resources/instances/instance_test.csv");
+                //s.ajouterInstance("./resources/instances/instance_test.csv");
                 System.out.println("instances " + s.instances);
                 s.solutionTriviale(0);
                 System.out.println("shifts " + s.shifts);
