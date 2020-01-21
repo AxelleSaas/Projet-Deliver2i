@@ -6,8 +6,11 @@
 package vuecontrole;
 
 import io.InstanceReader;
+import io.exception.ReaderException;
 import java.awt.Color;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -32,7 +35,6 @@ public class ListeInstances extends javax.swing.JFrame {
     
     private RequetePlanning requetePlanning;
     
-    private List<Instance> instances;
   
     public ListeInstances() {
         initConnexion();
@@ -52,6 +54,7 @@ public class ListeInstances extends javax.swing.JFrame {
         this.getContentPane().setBackground(Color.LIGHT_GRAY);
         listeInstancesSauv.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listeSolutions.addItem("Solution triviale");
+        listeSolutions.addItem("Solution basique");
     }
        
     private void remplirListeInstances() {
@@ -169,12 +172,10 @@ public class ListeInstances extends javax.swing.JFrame {
             try{
                 InstanceReader ir = new InstanceReader(chemin);
                 this.requetePlanning.ajouterInstance(ir.readInstance());
-            } 
+            }      
             catch (ReaderException ex) {
-                System.out.println("Erreur de lecture de l'instance");
                 Logger.getLogger(ListeInstances.class.getName()).log(Level.SEVERE, null, ex);
-            }            
-            finally {
+            }            finally {
                 this.remplirListeInstances();
             }
         }
@@ -182,18 +183,51 @@ public class ListeInstances extends javax.swing.JFrame {
 
     private void ajoutSolutionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajoutSolutionActionPerformed
         // TODO add your handling code here:
-        Solution s = new Solution();
         if(!listeInstancesSauv.isSelectionEmpty()){
             
             switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
+                 case "Solution basique":
+                            final EntityManagerFactory emf1 =Persistence.createEntityManagerFactory("Deliver2iPU");
+                            final EntityManager em1 = emf1.createEntityManager();
+                            try{
+                                final EntityTransaction et1 = em1.getTransaction();
+                                try{
+                                    et1.begin();
+
+                                    Solution s = new Solution();
+                                    Object obj1 = listeInstancesSauv.getSelectedValue();
+                                    Instance i1 = (Instance)obj1;
+
+                                    s.ajouterInstance(i1);
+
+                                    s.solutionBasique(0);
+                                    System.out.println(s);
+                                    em1.persist(s);
+                                    et1.commit();
+                                    JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                                }
+                                catch (Exception ex) {
+                                    et1.rollback();
+                                }
+                            } 
+                            finally {
+                                if(em1 != null && em1.isOpen()){
+                                    em1.close();
+                                }
+                                if(emf1 != null && emf1.isOpen()){
+                                    emf1.close();
+                                }
+                            }
+                        break;
                 case "Solution triviale":
-                    final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+                    final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
                     final EntityManager em = emf.createEntityManager();
                     try{
                         final EntityTransaction et = em.getTransaction();
                         try{
                             et.begin();
                             
+                            Solution s = new Solution();
                             Object obj = listeInstancesSauv.getSelectedValue();
                             Instance i = (Instance)obj;
                             
@@ -216,12 +250,8 @@ public class ListeInstances extends javax.swing.JFrame {
                             emf.close();
                         }
                     }
-                    Object obj = listeInstancesSauv.getSelectedValue();
-                    Instance i = (Instance)obj;
-                    s.getInstances().add(i);
-                    s.solutionTriviale(0);
-                    System.out.println(s);
                     break;
+                   
             }
         
         } 
@@ -229,7 +259,7 @@ public class ListeInstances extends javax.swing.JFrame {
 
     private void supprimerInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supprimerInstanceActionPerformed
          if(!listeInstancesSauv.isSelectionEmpty()){
-            final EntityManagerFactory emf = Persistence.createEntityManagerFactory("persistenceUnit");
+            final EntityManagerFactory emf = Persistence.createEntityManagerFactory("Deliver2iPU");
             final EntityManager em = emf.createEntityManager();
             try{
                 final EntityTransaction et = em.getTransaction();
