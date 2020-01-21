@@ -10,6 +10,7 @@ import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +30,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Persistence;
+import metier.RequetePlanning;
 
 /**
  *
@@ -37,7 +39,6 @@ import javax.persistence.Persistence;
 @NamedQueries({
     @NamedQuery(name="Solution.findAll",
             query = "SELECT s FROM Solution s")
-    
 })
 @Entity
 public class Solution implements Serializable {
@@ -126,9 +127,24 @@ public class Solution implements Serializable {
         for(Tournee t : this.instances.get(indexInstance).getTournees()){
             Shift s = new Shift();
             t.getShifts().add(s);
-            s.ajouterTournee(t);
+            s.ajouterTournee(t, this.getInstances().get(indexInstance).getDureeMinimale(),this.getInstances().get(indexInstance).getDureeMaximale());
             
             this.ajouterShift(s);
+        }
+    }
+    
+    public void solution1(Instance i){
+        int j = 0;
+        for(Tournee t : i.getTournees()){
+            if(i.getTournees().indexOf(t) == 0){
+                Shift s = new Shift();
+                t.getShifts().add(s);
+                s.ajouterTournee(t, i.getDureeMinimale(), i.getDureeMaximale());
+                this.ajouterShift(s);
+                j++;
+            }
+            Date dateDerniereTourne = this.getShifts().get(j).getTournees().get( this.getShifts().get(j).getTournees().size()-1).getFin();
+
         }
     }
     
@@ -184,12 +200,14 @@ public class Solution implements Serializable {
                     break;
                 }
             }
+            
             // On n'a pû l'ajouter dans aucun shift
             if (!ajout) {
                 Shift sTemp = new Shift();
                 sTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
                 this.ajouterShift(sTemp);
             }
+            
         }
     }
     
@@ -212,11 +230,11 @@ public class Solution implements Serializable {
                 et.begin();
                 Solution s = new Solution();
                 Solution s1 = new Solution();
-                s.ajouterInstance("./resources/instances/instance_1.csv");
-                s1.ajouterInstance("./resources/instances/instance_1.csv");
-                s.solutionBasique(0);
-                s1.solutionTriviale(0);
-                System.out.println(s);
+               // s.ajouterInstance("./resources/instances/instance_1.csv");
+                //s1.ajouterInstance("./resources/instances/instance_1.csv");
+               // s.solutionBasique(0);
+               // s1.solutionTriviale(0);
+               // System.out.println(s);
                 int duree = 0;
                 int duree1 = 0;
                 for (Tournee t : s.getInstances().get(0).getTournees()) {

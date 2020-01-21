@@ -219,7 +219,7 @@ public class Instance implements Serializable {
                 Shift shift = new Shift();
 
                 shift.ajouterTournee(i.getTournees().get(0), i.getDureeMinimale(), i.getDureeMaximale());
-                i.getTournees().get(0).setShift(shift);
+                i.getTournees().get(0).getShifts().add(shift);
 
                 em.persist(shift);
                 et.commit();

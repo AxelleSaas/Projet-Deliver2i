@@ -51,20 +51,7 @@ public class AffichageSolution extends javax.swing.JFrame {
      
          TaskSeries serie = new TaskSeries("Tournées");
          
-         /*Task t3 = new Task("Task", new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()+8640000));
-         final Task st31 = new Task("Task", new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()+1000000));
-         t3.addSubtask(st31);
-         final Task st32 = new Task("Task", new Date(System.currentTimeMillis()+3000000), new Date(System.currentTimeMillis()+8640000));
-t3.addSubtask(st32);
-         t3 = new Task("Task2", new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()+8640000));
-         
-         final Task st41= new Task("Task2", new Date(System.currentTimeMillis()), new Date(System.currentTimeMillis()+1000000));
-        t3.addSubtask(st41);
-         final Task st42 = new Task("Task2", new Date(System.currentTimeMillis()+3000000), new Date(System.currentTimeMillis()+8640000));
-t3.addSubtask(st42);
-         
-         serie.add(t3);
-         serie.add(t3);*/
+         System.out.println(s.getShifts());
          
           Date datedebut = new Date(0);
           Date datefin = new Date(86400000);
@@ -92,7 +79,7 @@ t3.addSubtask(st42);
      private void remplirListeSolution() {
         DefaultListModel list = new DefaultListModel();
         listeSolution.setModel(list);
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         try{
             
@@ -200,7 +187,7 @@ t3.addSubtask(st42);
 
             // create the chart...
                 final JFreeChart chart = ChartFactory.createGanttChart(
-                "Gantt Chart Demo",  // chart title
+                "",  // chart title
                 "Task",              // domain axis label
                 "Date",              // range axis label
                 dataset,             // data

@@ -55,7 +55,7 @@ public class Shift implements Serializable {
     @Column(name = "SHIFT_ID")
     private Long id;
 
-    private int tempsMort;
+    private long tempsMort;
     
 
         @ManyToMany( fetch = FetchType.EAGER)
@@ -240,14 +240,14 @@ public class Shift implements Serializable {
         
         Solution s = new Solution();
         Solution s1 = new Solution();
-        s.ajouterInstance("./resources/instances/instance_3.csv");
-        s1.ajouterInstance("./resources/instances/instance_3.csv");
+       // s.ajouterInstance("./resources/instances/instance_3.csv");
+        //s1.ajouterInstance("./resources/instances/instance_3.csv");
         Instance i = s.getInstances().get(0);
         Instance i1 = s1.getInstances().get(0);
         i.trier();
         i1.trier();
-        s.ajouterShift(new Shift());
-        s1.ajouterShift(new Shift());
+        //s.ajouterShift(new Shift());
+        //s1.ajouterShift(new Shift());
         for(Tournee t : i.getTournees()){
             ajout = false;
             for (Shift sh : s.getShifts()) {
