@@ -9,6 +9,8 @@ import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -152,6 +154,7 @@ public class Shift implements Serializable {
 
     public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
+        this.trier();
         if (!this.tournees.isEmpty()) {
             Tournee tourneePrecedente = this.getTournees().get(0);
             // On vérifie si on peut l'ajouter en premier
@@ -183,6 +186,7 @@ public class Shift implements Serializable {
         }
         this.tournees.add(tournee);
         this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+        this.trier();
         return true;
     }
     
@@ -235,13 +239,23 @@ public class Shift implements Serializable {
         return (int) (t/60/1000) ;
     }
     
+    public void trier () {
+        Collections.sort(tournees, new Comparator<Tournee>() {
+            @Override
+            public int compare(Tournee t1, Tournee t2) {
+                return t1.getDebut().compareTo(t2.getDebut());
+            }
+        });
+    }
+    
     public static void main(String[] args) throws ReaderException {
         boolean ajout = false;
         
         Solution s = new Solution();
         Solution s1 = new Solution();
-       // s.ajouterInstance("./resources/instances/instance_3.csv");
-        //s1.ajouterInstance("./resources/instances/instance_3.csv");
+        InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
+        s.ajouterInstance(ir.readInstance());
+        s1.ajouterInstance(ir.readInstance());
         Instance i = s.getInstances().get(0);
         Instance i1 = s1.getInstances().get(0);
         i.trier();
@@ -281,9 +295,9 @@ public class Shift implements Serializable {
             }
         }
         
-        System.out.println(s);
-        System.out.println(s1);
+        System.out.println(s.getShifts());
         System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
         System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
-    }        
+    }
+    
 }
