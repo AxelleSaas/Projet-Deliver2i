@@ -71,8 +71,6 @@ public class RequetePlanning {
         return true;
     }
     
-    
-    
     public static void main(String[] args) {
         String chemin = "./resources/instances/instance_3.csv";
         RequetePlanning requetePlanning = RequetePlanning.getInstance();

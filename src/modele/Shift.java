@@ -156,6 +156,8 @@ public class Shift implements Serializable {
         int index = 0;
         this.trier();
         if (!this.tournees.isEmpty()) {
+            if( this.duree() > dureeMax)
+                return false;
             Tournee tourneePrecedente = this.getTournees().get(0);
             // On vérifie si on peut l'ajouter en premier
             if (tournee.getFin().getTime() < tourneePrecedente.getDebut().getTime()) {

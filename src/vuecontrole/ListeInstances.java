@@ -55,6 +55,7 @@ public class ListeInstances extends javax.swing.JFrame {
         listeInstancesSauv.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listeSolutions.addItem("Solution triviale");
         listeSolutions.addItem("Solution basique");
+        listeSolutions.addItem("Solution intermediaire");
     }
        
     private void remplirListeInstances() {
@@ -186,39 +187,72 @@ public class ListeInstances extends javax.swing.JFrame {
         if(!listeInstancesSauv.isSelectionEmpty()){
             
             switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
-                 case "Solution basique":
-                            final EntityManagerFactory emf1 =Persistence.createEntityManagerFactory("Deliver2iPU");
-                            final EntityManager em1 = emf1.createEntityManager();
-                            try{
-                                final EntityTransaction et1 = em1.getTransaction();
-                                try{
-                                    et1.begin();
+                 case "Solution intermediaire":
+                    final EntityManagerFactory emf2 =Persistence.createEntityManagerFactory("Deliver2iPU");
+                    final EntityManager em2 = emf2.createEntityManager();
+                    try{
+                        final EntityTransaction et2 = em2.getTransaction();
+                        try{
+                            et2.begin();
 
-                                    Solution s = new Solution();
-                                    Object obj1 = listeInstancesSauv.getSelectedValue();
-                                    Instance i1 = (Instance)obj1;
+                            Solution s = new Solution();
+                            Object obj1 = listeInstancesSauv.getSelectedValue();
+                            Instance i1 = (Instance)obj1;
 
-                                    s.ajouterInstance(i1);
+                            s.ajouterInstance(i1);
 
-                                    s.solutionBasique(0);
-                                    System.out.println(s);
-                                    em1.persist(s);
-                                    et1.commit();
-                                    JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
-                                }
-                                catch (Exception ex) {
-                                    et1.rollback();
-                                }
-                            } 
-                            finally {
-                                if(em1 != null && em1.isOpen()){
-                                    em1.close();
-                                }
-                                if(emf1 != null && emf1.isOpen()){
-                                    emf1.close();
-                                }
-                            }
-                        break;
+                            s.solutionIntermediaire(0);
+                            System.out.println(s);
+                            em2.persist(s);
+                            et2.commit();
+                            JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                        }
+                        catch (Exception ex) {
+                            et2.rollback();
+                        }
+                    } 
+                    finally {
+                        if(em2 != null && em2.isOpen()){
+                            em2.close();
+                        }
+                        if(emf2 != null && emf2.isOpen()){
+                            emf2.close();
+                        }
+                    }
+                break;
+                case "Solution basique":
+                    final EntityManagerFactory emf1 =Persistence.createEntityManagerFactory("Deliver2iPU");
+                    final EntityManager em1 = emf1.createEntityManager();
+                    try{
+                        final EntityTransaction et1 = em1.getTransaction();
+                        try{
+                            et1.begin();
+
+                            Solution s = new Solution();
+                            Object obj1 = listeInstancesSauv.getSelectedValue();
+                            Instance i1 = (Instance)obj1;
+
+                            s.ajouterInstance(i1);
+
+                            s.solutionBasique(0);
+                            System.out.println(s);
+                            em1.persist(s);
+                            et1.commit();
+                            JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                        }
+                        catch (Exception ex) {
+                            et1.rollback();
+                        }
+                    } 
+                    finally {
+                        if(em1 != null && em1.isOpen()){
+                            em1.close();
+                        }
+                        if(emf1 != null && emf1.isOpen()){
+                            emf1.close();
+                        }
+                    }
+                break;
                 case "Solution triviale":
                     final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
                     final EntityManager em = emf.createEntityManager();

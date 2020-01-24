@@ -205,6 +205,15 @@ public class Instance implements Serializable {
 
     /* M E T H O D S */
     
+    public void trier () {
+        Collections.sort(tournees, new Comparator<Tournee>() {
+            @Override
+            public int compare(Tournee t1, Tournee t2) {
+                return t1.getDebut().compareTo(t2.getDebut());
+            }
+        });
+    }
+    
     public static void main(String[] args) throws ReaderException {
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
@@ -236,14 +245,5 @@ public class Instance implements Serializable {
                 emf.close();
             }
         }
-    }
-    
-    public void trier () {
-        Collections.sort(tournees, new Comparator<Tournee>() {
-            @Override
-            public int compare(Tournee t1, Tournee t2) {
-                return t1.getDebut().compareTo(t2.getDebut());
-            }
-        });
     }
 }
