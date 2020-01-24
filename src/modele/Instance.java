@@ -205,7 +205,8 @@ public class Instance implements Serializable {
     /**
      * Permet de trier les tournées de l'instance dans l'ordre de commencement des tournées.
      */
-    public void trier () {
+    
+    public void trierTournees () {
         Collections.sort(tournees, new Comparator<Tournee>() {
             @Override
             public int compare(Tournee t1, Tournee t2) {

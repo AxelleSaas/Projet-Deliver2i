@@ -60,9 +60,9 @@ public class Test1 {
                     for (Tournee t : sh.getTournees()) 
                         duree2 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
               
                 em.persist(s2);
                 et.commit();

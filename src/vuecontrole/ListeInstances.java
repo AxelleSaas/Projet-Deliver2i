@@ -120,7 +120,7 @@ public class ListeInstances extends javax.swing.JFrame {
      * @return dataset données qui serviront à générer un diagramme
      */
     private IntervalCategoryDataset getCategoryDataset(Solution s, int page) {
-     
+
         int j =0;
         int numShift = 40*page;
         TaskSeries serie = new TaskSeries("Tournées");
