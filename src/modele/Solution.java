@@ -54,6 +54,10 @@ public class Solution implements Serializable {
     @ManyToOne
     private Instance instance;
     
+    /**
+     * Ensemble des shifts qui composent une solution
+     * Une solution est composée de plusieurs shifts dans lequel sont placées les tournées de son instance
+     */
     @OneToMany(mappedBy="solution", cascade = {
         CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
     })
