@@ -72,7 +72,7 @@ public class Instance implements Serializable {
     })
     private List<Tournee> tournees;
     
-    @ManyToMany(mappedBy = "instances")
+    @OneToMany(mappedBy = "instance")
     private List<Solution> solutions;
     
     /* C O N S T R U C T E U R S */

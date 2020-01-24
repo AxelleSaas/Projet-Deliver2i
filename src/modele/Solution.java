@@ -26,6 +26,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -50,12 +51,8 @@ public class Solution implements Serializable {
     @Column(name = "SOLUTION_ID")
     private Long id;
 
-    @ManyToMany
-    @JoinTable(name = "SOLUTION_INSTANCE",
-            joinColumns = @JoinColumn(name = "SOLUTION_ID", referencedColumnName="SOLUTION_ID"),
-            inverseJoinColumns = @JoinColumn(name  = "INSTANCE_ID",referencedColumnName="INSTANCE_ID")
-    )
-    private List<Instance> instances;
+    @ManyToOne
+    private Instance instance;
     
     @OneToMany(mappedBy="solution", cascade = {
         CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
@@ -64,7 +61,7 @@ public class Solution implements Serializable {
 
     /* C O N S T R U C T E U R S */
     public Solution() {
-        this.instances = new ArrayList<>();
+        this.instance = null;
         this.shifts = new ArrayList<>();
     }
     
@@ -78,13 +75,14 @@ public class Solution implements Serializable {
         this.id = id;
     }
 
-    public List<Instance> getInstances() {
-        return instances;
+    public Instance getInstance() {
+        return instance;
     }
 
-    public void setInstances(List<Instance> instances) {
-        this.instances = instances;
+    public void setInstance(Instance instance) {
+        this.instance = instance;
     }
+
 
     public List<Shift> getShifts() {
         return shifts;
@@ -123,11 +121,11 @@ public class Solution implements Serializable {
     }
     
     /* M E T H O D S */
-    public void solutionTriviale(int indexInstance){
-        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+    public void solutionTriviale(){
+        for(Tournee t : this.instance.getTournees()){
             Shift s = new Shift();
             t.getShifts().add(s);
-            s.ajouterTournee(t, this.getInstances().get(indexInstance).getDureeMinimale(),this.getInstances().get(indexInstance).getDureeMaximale());
+            s.ajouterTournee(t, this.instance.getDureeMinimale(), this.instance.getDureeMaximale());
             
             this.ajouterShift(s);
         }
@@ -149,7 +147,7 @@ public class Solution implements Serializable {
     }
     
     public void ajouterInstance(Instance i){
-            this.instances.add(i);
+            this.instance = i;
             i.getSolutions().add(this);
     }
     
@@ -162,11 +160,11 @@ public class Solution implements Serializable {
     public void solutionBasique(int indexInstance){
         boolean ajout = false;
         
-        Instance instance = this.instances.get(indexInstance);
+        Instance instance = this.instance;
         instance.trier();
         
         this.ajouterShift(new Shift());
-        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+        for(Tournee t : this.instance.getTournees()){
             ajout = false;
             for (Shift s : this.getShifts()) {
                 // Si on l'ajoute, on arrete la boucle
@@ -182,16 +180,17 @@ public class Solution implements Serializable {
                 this.ajouterShift(shTemp);
             }
         }
+        System.out.println(this.shifts);
     }
     
     public void solutionIntermediaire(int indexInstance){
         boolean ajout = false;
         
-        Instance instance = this.instances.get(indexInstance);
+        Instance instance = this.instance;
         instance.trier();
         
         this.ajouterShift(new Shift());
-        for(Tournee t : this.instances.get(indexInstance).getTournees()){
+        for(Tournee t : this.instance.getTournees()){
             ajout = false;
             for (Shift s : this.getShifts()) {
                 // Si on l'ajoute, on arrete la boucle
@@ -237,14 +236,14 @@ public class Solution implements Serializable {
                // System.out.println(s);
                 int duree = 0;
                 int duree1 = 0;
-                for (Tournee t : s.getInstances().get(0).getTournees()) {
+                for (Tournee t : s.getInstance().getTournees()) {
                     duree += t.duree();
                 }
-                for (Tournee t : s1.getInstances().get(0).getTournees()) {
+                for (Tournee t : s1.getInstance().getTournees()) {
                     duree1 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
                 
                 em.persist(s);
                 et.commit();
