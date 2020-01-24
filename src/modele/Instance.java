@@ -205,7 +205,7 @@ public class Instance implements Serializable {
 
     /* M E T H O D S */
     
-    public void trier () {
+    public void trierTournees () {
         Collections.sort(tournees, new Comparator<Tournee>() {
             @Override
             public int compare(Tournee t1, Tournee t2) {

@@ -150,7 +150,7 @@ public class Solution implements Serializable {
         boolean ajout = false;
         
         Instance instance = this.instance;
-        instance.trier();
+        instance.trierTournees();
         
         this.ajouterShift(new Shift());
         for(Tournee t : this.instance.getTournees()){
@@ -176,7 +176,7 @@ public class Solution implements Serializable {
         boolean ajout = false;
         
         Instance instance = this.instance;
-        instance.trier();
+        instance.trierTournees();
         this.ajouterShift(new Shift());
         for(Tournee t : this.instance.getTournees()){
             ajout = false;
@@ -207,15 +207,14 @@ public class Solution implements Serializable {
         System.out.println(this.getShifts());
     }
     
-    public int calcTempsMortTotal(int dureeMin){
+    
+    public int calcTempsMortTotal(){
         int tempsMort = 0;
         for (Shift s : this.getShifts()) {
-            tempsMort += s.calcTempsMort(dureeMin);
+            tempsMort += s.getTempsMort();
         }
         return tempsMort;
     }
-    
- 
 
     public static void main(String[] args) {
         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
@@ -250,9 +249,9 @@ public class Solution implements Serializable {
                     for (Tournee t : sh.getTournees()) 
                         duree2 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
               
                 em.persist(s);
                 et.commit();

@@ -113,7 +113,7 @@ public class ListeInstances extends javax.swing.JFrame {
               Shift shift = s.getShifts().get(i);
               String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
                     final Task t = new Task(name, datedebut,  datefin);
-                    shift.trier();
+                    shift.trierTournees();
                     for(Tournee tournee : shift.getTournees()){
                               final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
                               st.setPercentComplete(1.0);
