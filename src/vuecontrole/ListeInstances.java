@@ -94,13 +94,6 @@ public class ListeInstances extends javax.swing.JFrame {
            List<Instance> listeObjInstance = query.getResultList();
            
            for(Instance i : listeObjInstance) {
-               Query query2 = em.createNamedQuery("Tournee.getTourneeByInstanceId");
-               query2.setParameter("id", i);
-               List<Tournee> listeTournee = query2.getResultList();
-               
-               for(Tournee t : listeTournee){
-                   i.getTournees().add(t);
-               }
                
                list.addElement(i);
                listeInstancesSauv.setModel(list);
@@ -122,7 +115,6 @@ public class ListeInstances extends javax.swing.JFrame {
     private IntervalCategoryDataset getCategoryDataset(Solution s, int page) {
 
         int j =0;
-        int numShift = 40*page;
         TaskSeries serie = new TaskSeries("Tournées");
         Date datedebut = new Date(0);
         Date datefin = new Date(86400000);
@@ -132,12 +124,12 @@ public class ListeInstances extends javax.swing.JFrame {
             
             if(i > s.getShifts().size()-1) // dépassement de la taille de la liste
                 break;
-            
+            j = i+1;
             Shift shift = s.getShifts().get(i);
             String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
             final Task t = new Task(name, datedebut,  datefin); // task <=> shift
             
-            shift.trier();
+            shift.trierTournees();
             
             for(Tournee tournee : shift.getTournees()){
                 final Task st = new Task(name, tournee.getDebut(), tournee.getFin()); // subtask <=> tournee
@@ -160,8 +152,6 @@ public class ListeInstances extends javax.swing.JFrame {
             }
             
             serie.add(t);
-            j++;
-            numShift++;
         }
 
         final TaskSeriesCollection dataset = new TaskSeriesCollection();
@@ -185,19 +175,10 @@ public class ListeInstances extends javax.swing.JFrame {
            List<Solution> listeObjSolution = query.getResultList();
            
            for(Solution s : listeObjSolution) {
-               
-               Query query2 = em.createNamedQuery("Shift.getShiftBySolutionId");
-               query2.setParameter("id", s);
-               List<Shift> listeShift = query2.getResultList();
-               
-               for(Shift shift : listeShift){
-                   
-                    s.getShifts().add(shift);
-               }
-               
                list.addElement(s);
                listeSolution.setModel(list);
            }
+           
         } 
         finally {
             if(em != null && em.isOpen()){
@@ -222,7 +203,6 @@ public class ListeInstances extends javax.swing.JFrame {
         ajoutInstance = new javax.swing.JButton();
         listeSolutions = new javax.swing.JComboBox<>();
         ajoutSolution = new javax.swing.JButton();
-        supprimerInstance = new javax.swing.JButton();
         afficherSolution = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         listeSolution = new javax.swing.JList<>();
@@ -261,13 +241,6 @@ public class ListeInstances extends javax.swing.JFrame {
         ajoutSolution.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ajoutSolutionActionPerformed(evt);
-            }
-        });
-
-        supprimerInstance.setText("Supprimer une instance");
-        supprimerInstance.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                supprimerInstanceActionPerformed(evt);
             }
         });
 
@@ -348,9 +321,8 @@ public class ListeInstances extends javax.swing.JFrame {
                                     .addGroup(layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(supprimerInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                            .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
+                                            .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(187, 187, 187)
                                         .addComponent(left))
@@ -418,10 +390,7 @@ public class ListeInstances extends javax.swing.JFrame {
                                                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addGap(18, 18, 18)
                                                         .addComponent(afficherSolution))))))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(ajoutInstance)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(supprimerInstance))))))
+                                    .addComponent(ajoutInstance)))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(427, 427, 427)
                         .addComponent(right)))
@@ -485,7 +454,7 @@ public class ListeInstances extends javax.swing.JFrame {
                             
                             em2.persist(s);
                             et2.commit();
-                            JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                            JOptionPane.showMessageDialog(rootPane, "Ajout de solution réussi.");
                         }
                         catch (Exception ex) {
                             et2.rollback();
@@ -538,11 +507,11 @@ public class ListeInstances extends javax.swing.JFrame {
                             Instance i = (Instance)obj;
                             
                             s.ajouterInstance(i);
-                            
                             s.solutionTriviale();
+                            
                             em.persist(s);
                             et.commit();
-                            JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
+                            JOptionPane.showMessageDialog(rootPane, "Ajout de solution réussi.");
                         }
                         catch (Exception ex) {
                             et.rollback();
@@ -559,36 +528,6 @@ public class ListeInstances extends javax.swing.JFrame {
         this.remplirListeSolution();
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
-
-    /**
-     * Supprime une instance de la BDD.
-     * @param evt 
-     */
-    private void supprimerInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supprimerInstanceActionPerformed
-         if(!listeInstancesSauv.isSelectionEmpty()){
-            EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
-            try{
-                final EntityTransaction et = em.getTransaction();
-                try{
-                    et.begin();
-                    Object obj = listeInstancesSauv.getSelectedValue();
-                    Instance i = (Instance)obj;
-                    Instance it = em.find(Instance.class, i.getId());
-                    em.remove(it);
-                    et.commit();
-                    JOptionPane.showMessageDialog(rootPane, "Supression réussie.");
-                }
-                catch (Exception ex) {
-                    et.rollback();
-                }
-            } 
-            finally {
-                if(em != null && em.isOpen()){
-                    em.close();
-                }
-            }
-         }
-    }//GEN-LAST:event_supprimerInstanceActionPerformed
 
     /**
      * Affiche le diagramme de la solution (shift et tournées).
@@ -626,8 +565,8 @@ public class ListeInstances extends javax.swing.JFrame {
             jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
             jPanel1.add(chartPanel);
 
-            sommeTempsMort.setText(""+s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
-            System.out.println(s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
+            sommeTempsMort.setText(""+s.calcTempsMortTotal());
+            
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed
@@ -780,6 +719,5 @@ public class ListeInstances extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> listeSolutions;
     private javax.swing.JButton right;
     private javax.swing.JLabel sommeTempsMort;
-    private javax.swing.JButton supprimerInstance;
     // End of variables declaration//GEN-END:variables
 }

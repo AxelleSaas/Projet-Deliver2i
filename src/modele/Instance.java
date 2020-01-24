@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -69,7 +70,7 @@ public class Instance implements Serializable {
     
     @OneToMany(mappedBy="instance", cascade = {
         CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+    }, fetch = FetchType.EAGER)
     private List<Tournee> tournees;
     
     @OneToMany(mappedBy = "instance")

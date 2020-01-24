@@ -21,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -61,7 +62,7 @@ public class Solution implements Serializable {
      */
     @OneToMany(mappedBy="solution", cascade = {
         CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+    }, fetch = FetchType.EAGER)
     private List<Shift> shifts;
 
     /* C O N S T R U C T E U R S */
@@ -122,7 +123,7 @@ public class Solution implements Serializable {
     /* T O S T R I N G */
     @Override
     public String toString() {
-        return "Solution " + this.id;
+        return "Solution " + this.id + " -  " +this.getInstance();
     }
     
     /* M E T H O D S */ 
