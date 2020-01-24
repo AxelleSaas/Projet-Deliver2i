@@ -47,9 +47,10 @@ public class ListeInstances extends javax.swing.JFrame {
      */
     
     private RequetePlanning requetePlanning;
-    
+    private int page;
   
     public ListeInstances() {
+        this.page =0;
         initConnexion();
         initComponents();
         this.initialisationFenetre();
@@ -63,7 +64,7 @@ public class ListeInstances extends javax.swing.JFrame {
 
     private void initialisationFenetre(){
         this.setVisible(true);
-        this.setLocation(0, 0 );
+        this.setLocation(0, 0);
         this.setTitle("Gestion des instances");
         this.getContentPane().setBackground(Color.LIGHT_GRAY);
         listeInstancesSauv.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -103,29 +104,44 @@ public class ListeInstances extends javax.swing.JFrame {
         
     }
     
-    private IntervalCategoryDataset getCategoryDataset(Solution s) {
+ private IntervalCategoryDataset getCategoryDataset(Solution s, int page) {
      
-         TaskSeries serie = new TaskSeries("Tournées");
-         
-         System.out.println(s.getShifts());
-         
+          int j =0;
+          int numShift = 40*page;
+          TaskSeries serie = new TaskSeries("Tournées");
           Date datedebut = new Date(0);
           Date datefin = new Date(86400000);
-            
-          System.out.println("Date debut : "+ datedebut);
-          System.out.println("Date fin : "+ datefin);
 
-          int j =0;
-          for(Shift shift : s.getShifts()){
-                String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
-                final Task t = new Task(name, datedebut,  datefin);
-                for(Tournee tournee : shift.getTournees()){
-                    final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
-                    t.addSubtask(st);
-                }
-               serie.add(t);
-                j++;
-            }
+          
+          for(int i=40*page; i<40*page+40;i++){
+              if(i > s.getShifts().size()-1)
+                  break;
+              Shift shift = s.getShifts().get(i);
+              String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
+                    final Task t = new Task(name, datedebut,  datefin);
+                    shift.trier();
+                    for(Tournee tournee : shift.getTournees()){
+                              final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
+                              st.setPercentComplete(1.0);
+                              t.addSubtask(st);
+                              int index = shift.getTournees().indexOf(tournee);
+                              if(index != 0){
+                                        if(!tournee.getDebut().equals(shift.getTournees().get(index).getFin())) {
+                                        final Task st2 = new Task(name, new Date (shift.getTournees().get(index-1).getFin().getTime() +1), new Date (tournee.getDebut().getTime() - 1));
+                                        t.addSubtask(st2);
+                                        }
+                              }
+                    }
+                    Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstance().getDureeMinimale()*60000);
+                    if(shift.getTournees().get(shift.getTournees().size()-1).getFin().before(dateFinMinimum) ){
+                              final Task st3 = new Task(name, shift.getTournees().get(shift.getTournees().size()-1).getFin(), dateFinMinimum);
+                              t.addSubtask(st3);
+                    }
+                    serie.add(t);
+                     j++;
+                     numShift++;
+                     System.out.println(numShift);
+          }
           
           final TaskSeriesCollection dataset = new TaskSeriesCollection();
           dataset.add(serie);
@@ -192,6 +208,8 @@ public class ListeInstances extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        left = new javax.swing.JButton();
+        right = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1920, 1080));
@@ -236,7 +254,7 @@ public class ListeInstances extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1198, Short.MAX_VALUE)
+            .addGap(0, 1140, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -250,6 +268,20 @@ public class ListeInstances extends javax.swing.JFrame {
 
         jLabel3.setText("Liste des solutions");
 
+        left.setText("<");
+        left.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                leftActionPerformed(evt);
+            }
+        });
+
+        right.setText(">");
+        right.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rightActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -261,24 +293,34 @@ public class ListeInstances extends javax.swing.JFrame {
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel2)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(listeSolutions, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                                        .addComponent(afficherSolution, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(supprimerInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addComponent(jLabel3)))))
-                .addGap(18, 18, 18)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(listeSolutions, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                                    .addComponent(afficherSolution, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(ajoutInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(ajoutSolution, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(supprimerInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(187, 187, 187)
+                                        .addComponent(left))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(jLabel3))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(right)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -287,32 +329,41 @@ public class ListeInstances extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(15, 15, 15)
-                        .addComponent(jLabel1)
-                        .addGap(16, 16, 16)
-                        .addComponent(jLabel2)
-                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(ajoutInstance)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(supprimerInstance))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(ajoutSolution)
-                            .addComponent(listeSolutions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(3, 3, 3)
-                        .addComponent(jLabel3)
-                        .addGap(18, 18, 18)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(afficherSolution))
+                                .addComponent(jLabel1)
+                                .addGap(16, 16, 16)
+                                .addComponent(jLabel2)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(ajoutSolution)
+                                            .addComponent(listeSolutions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(3, 3, 3)
+                                                .addComponent(jLabel3)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(afficherSolution))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(114, 114, 114)
+                                                .addComponent(left))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(ajoutInstance)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(supprimerInstance))))))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(427, 427, 427)
+                        .addComponent(right)))
+                .addContainerGap(510, Short.MAX_VALUE))
         );
 
         pack();
@@ -477,10 +528,12 @@ public class ListeInstances extends javax.swing.JFrame {
     private void afficherSolutionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_afficherSolutionActionPerformed
         // TODO add your handling code here:
         if(!listeSolution.isSelectionEmpty()){
+            
             Object obj = listeSolution.getSelectedValue();
             Solution s = (Solution)obj;
+            this.page = 0;
 
-            final IntervalCategoryDataset dataset = getCategoryDataset(s);
+            final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
 
             // create the chart...
             final JFreeChart chart = ChartFactory.createGanttChart(
@@ -507,6 +560,82 @@ public class ListeInstances extends javax.swing.JFrame {
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed
+
+    private void leftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leftActionPerformed
+        // TODO add your handling code here:
+        // TODO add your handling code here:
+        if(!listeSolution.isSelectionEmpty() && this.page!=0){
+            Object obj = listeSolution.getSelectedValue();
+            Solution s = (Solution)obj;
+            this.page = this.page-1;
+            System.out.println(this.page);
+            final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
+
+            // create the chart...
+            final JFreeChart chart = ChartFactory.createGanttChart(
+                "",  // chart title
+                "Task",              // domain axis label
+                "Date",              // range axis label
+                dataset,             // data
+                false,                // include legend
+                true,                // tooltips
+                false                // urls
+            );
+            final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            //      plot.getDomainAxis().setMaxCategoryLabelWidthRatio(10.0f);
+            final CategoryItemRenderer renderer = plot.getRenderer();
+            renderer.setSeriesPaint(0, Color.blue);
+
+            final ChartPanel chartPanel = new ChartPanel(chart);
+
+            chartPanel.setPreferredSize(new java.awt.Dimension(jPanel1.getWidth(), jPanel1.getHeight()));
+            jPanel1.removeAll();
+            jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
+            jPanel1.add(chartPanel);
+
+            this.revalidate();
+        }
+        
+    }//GEN-LAST:event_leftActionPerformed
+
+    private void rightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rightActionPerformed
+        // TODO add your handling code here:
+        if(!listeSolution.isSelectionEmpty()){
+            Object obj = listeSolution.getSelectedValue();
+            Solution s = (Solution)obj;
+            
+            System.out.println((s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40);
+            if(this.page < (s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40 ){
+            this.page = this.page+1;
+            System.out.println(this.page);
+            final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
+
+            // create the chart...
+            final JFreeChart chart = ChartFactory.createGanttChart(
+                "",  // chart title
+                "Task",              // domain axis label
+                "Date",              // range axis label
+                dataset,             // data
+                false,                // include legend
+                true,                // tooltips
+                false                // urls
+            );
+            final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+            //      plot.getDomainAxis().setMaxCategoryLabelWidthRatio(10.0f);
+            final CategoryItemRenderer renderer = plot.getRenderer();
+            renderer.setSeriesPaint(0, Color.blue);
+
+            final ChartPanel chartPanel = new ChartPanel(chart);
+
+            chartPanel.setPreferredSize(new java.awt.Dimension(jPanel1.getWidth(), jPanel1.getHeight()));
+            jPanel1.removeAll();
+            jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
+            jPanel1.add(chartPanel);
+
+            this.revalidate();
+            }
+        }
+    }//GEN-LAST:event_rightActionPerformed
 
     /**
      * @param args the command line arguments
@@ -555,9 +684,11 @@ public class ListeInstances extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton left;
     private javax.swing.JList<String> listeInstancesSauv;
     private javax.swing.JList<String> listeSolution;
     private javax.swing.JComboBox<String> listeSolutions;
+    private javax.swing.JButton right;
     private javax.swing.JButton supprimerInstance;
     // End of variables declaration//GEN-END:variables
 }
