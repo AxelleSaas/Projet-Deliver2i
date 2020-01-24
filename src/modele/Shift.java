@@ -256,9 +256,11 @@ public class Shift implements Serializable {
         
         // Si la durée est inférieure à la durée minimum, on prend en compote la durée minimum pour le temps mort
         if (this.duree() < dureeMin) {
-            temps = (dureeMin - tourneePrec.duree());
-            this.setTempsMort(temps);
-            return (temps);
+            for (Tournee t : this.tournees) {
+                temps += (dureeMin - t.duree());
+                this.setTempsMort(temps);
+                return (temps);
+            }
         }
         // On ajoute la somme des intervalles entre les tournées du shift
         for (Tournee t : this.tournees) {

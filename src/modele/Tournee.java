@@ -32,8 +32,9 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- *
- * @author Axelle
+ * Représente une tournée, intervalle entre deux dates oû le livreur est actif
+ * 
+ * @author Axelle SAAS et Hugo POLARD
  */
 @NamedQueries({
     @NamedQuery(name="Tournee.getTourneeByInstanceId",
@@ -123,36 +124,6 @@ public class Tournee implements Serializable {
         this.shifts = shifts;
     }
 
-
-    public void getTourneesByShift(Shift s){
-        
-         final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
-        final EntityManager em = emf.createEntityManager();
-
-        try{
-            final EntityTransaction et = em.getTransaction();
-            try{
-                et.begin();
-                
-                et.commit();
-            }
-            catch (Exception ex) {
-                et.rollback();
-            }
-        } 
-        finally {
-            if(em != null && em.isOpen()){
-                em.close();
-            }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
-        }
-        
-
-    }
-
-
     /* E Q U A L S   E T   H A S H C O D E */
         @Override
     public int hashCode() {
@@ -197,7 +168,7 @@ public class Tournee implements Serializable {
     
     /* M E T H O D S */
     public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("persistenceUnit");
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
         final EntityManager em = emf.createEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();

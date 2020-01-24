@@ -137,7 +137,7 @@ public class ListeInstances extends javax.swing.JFrame {
             String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
             final Task t = new Task(name, datedebut,  datefin); // task <=> shift
             
-            shift.trier();
+            shift.trierTournees();
             
             for(Tournee tournee : shift.getTournees()){
                 final Task st = new Task(name, tournee.getDebut(), tournee.getFin()); // subtask <=> tournee
@@ -626,8 +626,8 @@ public class ListeInstances extends javax.swing.JFrame {
             jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
             jPanel1.add(chartPanel);
 
-            sommeTempsMort.setText(""+s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
-            System.out.println(s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
+            sommeTempsMort.setText(""+s.calcTempsMortTotal());
+            System.out.println(s.calcTempsMortTotal());
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed
