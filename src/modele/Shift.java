@@ -152,7 +152,7 @@ public class Shift implements Serializable {
     
     /* M E T H O D S */
 
-    public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
+        public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
         this.trier();
         if (!this.tournees.isEmpty()) {
@@ -297,9 +297,9 @@ public class Shift implements Serializable {
             }
         }
         
-        System.out.println(s.getShifts());
-        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
-        System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
-    }
-    
+        System.out.println(s);
+        System.out.println(s1);
+        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes");
+        System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes");
+    }        
 }
