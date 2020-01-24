@@ -19,6 +19,7 @@ import javax.persistence.Query;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import metier.RequetePlanning;
 import modele.Instance;
 import modele.Shift;
 import modele.Solution;
@@ -92,8 +93,8 @@ public class AffichageSolution extends javax.swing.JFrame {
      private void remplirListeSolution() {
         DefaultListModel list = new DefaultListModel();
         listeSolution.setModel(list);
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
-        final EntityManager em = emf.createEntityManager();
+        RequetePlanning requetePlanning = RequetePlanning.getInstance();
+        EntityManager em = requetePlanning.getEntityManagerFactory().createEntityManager();
         try{
             
            Query query = em.createNamedQuery("Solution.findAll");
@@ -118,9 +119,7 @@ public class AffichageSolution extends javax.swing.JFrame {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
+            requetePlanning.close();
         }
         
         

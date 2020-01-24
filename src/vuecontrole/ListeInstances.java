@@ -47,7 +47,6 @@ public class ListeInstances extends javax.swing.JFrame {
      */
     
     private RequetePlanning requetePlanning;
-    
   
     public ListeInstances() {
         initConnexion();
@@ -75,8 +74,7 @@ public class ListeInstances extends javax.swing.JFrame {
     private void remplirListeInstances() {
         DefaultListModel list = new DefaultListModel();
         listeInstancesSauv.setModel(list);
-        final EntityManagerFactory emf = Persistence.createEntityManagerFactory("Deliver2iPU");
-        final EntityManager em = emf.createEntityManager();
+        EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
         try{
            Query query = em.createNamedQuery("Instance.findAll");
            List<Instance> listeObjInstance = query.getResultList();
@@ -95,12 +93,7 @@ public class ListeInstances extends javax.swing.JFrame {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
         }
-        
-        
     }
     
     private IntervalCategoryDataset getCategoryDataset(Solution s) {
@@ -135,8 +128,7 @@ public class ListeInstances extends javax.swing.JFrame {
      private void remplirListeSolution() {
         DefaultListModel list = new DefaultListModel();
         listeSolution.setModel(list);
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
-        final EntityManager em = emf.createEntityManager();
+        EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
         try{
             
            Query query = em.createNamedQuery("Solution.findAll");
@@ -160,9 +152,6 @@ public class ListeInstances extends javax.swing.JFrame {
         finally {
             if(em != null && em.isOpen()){
                 em.close();
-            }
-            if(emf != null && emf.isOpen()){
-                emf.close();
             }
         }
         
@@ -195,6 +184,11 @@ public class ListeInstances extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1920, 1080));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         listeInstancesSauv.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jScrollPane1.setViewportView(listeInstancesSauv);
@@ -340,8 +334,7 @@ public class ListeInstances extends javax.swing.JFrame {
             
             switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
                  case "Solution intermediaire":
-                    final EntityManagerFactory emf2 =Persistence.createEntityManagerFactory("Deliver2iPU");
-                    final EntityManager em2 = emf2.createEntityManager();
+                    EntityManager em2 = this.requetePlanning.getEntityManagerFactory().createEntityManager();
                     try{
                         final EntityTransaction et2 = em2.getTransaction();
                         try{
@@ -367,14 +360,10 @@ public class ListeInstances extends javax.swing.JFrame {
                         if(em2 != null && em2.isOpen()){
                             em2.close();
                         }
-                        if(emf2 != null && emf2.isOpen()){
-                            emf2.close();
-                        }
                     }
                 break;
                 case "Solution basique":
-                    final EntityManagerFactory emf1 =Persistence.createEntityManagerFactory("Deliver2iPU");
-                    final EntityManager em1 = emf1.createEntityManager();
+                    EntityManager em1 = this.requetePlanning.getEntityManagerFactory().createEntityManager();
                     try{
                         final EntityTransaction et1 = em1.getTransaction();
                         try{
@@ -400,14 +389,10 @@ public class ListeInstances extends javax.swing.JFrame {
                         if(em1 != null && em1.isOpen()){
                             em1.close();
                         }
-                        if(emf1 != null && emf1.isOpen()){
-                            emf1.close();
-                        }
                     }
                 break;
                 case "Solution triviale":
-                    final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
-                    final EntityManager em = emf.createEntityManager();
+                    EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
                     try{
                         final EntityTransaction et = em.getTransaction();
                         try{
@@ -432,9 +417,6 @@ public class ListeInstances extends javax.swing.JFrame {
                         if(em != null && em.isOpen()){
                             em.close();
                         }
-                        if(emf != null && emf.isOpen()){
-                            emf.close();
-                        }
                     }
                     break;
                    
@@ -445,8 +427,7 @@ public class ListeInstances extends javax.swing.JFrame {
 
     private void supprimerInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supprimerInstanceActionPerformed
          if(!listeInstancesSauv.isSelectionEmpty()){
-            final EntityManagerFactory emf = Persistence.createEntityManagerFactory("Deliver2iPU");
-            final EntityManager em = emf.createEntityManager();
+            EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
             try{
                 final EntityTransaction et = em.getTransaction();
                 try{
@@ -465,10 +446,6 @@ public class ListeInstances extends javax.swing.JFrame {
             finally {
                 if(em != null && em.isOpen()){
                     em.close();
-                }
-                if(emf != null && emf.isOpen()){
-                    emf.close();
-                    this.remplirListeInstances();
                 }
             }
          }
@@ -507,6 +484,10 @@ public class ListeInstances extends javax.swing.JFrame {
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        this.requetePlanning.close();
+    }//GEN-LAST:event_formWindowClosed
 
     /**
      * @param args the command line arguments
