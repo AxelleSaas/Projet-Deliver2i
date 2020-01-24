@@ -4,18 +4,32 @@
  * and open the template in the editor.
  */
 package modele;
+
 import io.InstanceReader;
 import io.exception.ReaderException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,6 +41,11 @@ import javax.persistence.Persistence;
  *
  * @author Axelle
  */
+
+@NamedQueries({
+    @NamedQuery(name="Shift.getShiftBySolutionId",
+                query = "SELECT shift FROM Shift shift WHERE shift.solution = :id ")
+})
 @Entity
 public class Shift implements Serializable {
 
@@ -34,13 +53,19 @@ public class Shift implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+
+    @Column(name = "SHIFT_ID")
     private Long id;
 
     private long tempsMort;
     
-    @OneToMany(mappedBy="shift", cascade = {
-        CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.ALL
-    })
+
+        @ManyToMany( fetch = FetchType.EAGER)
+    @JoinTable(name = "SHIFT_TOURNEE",
+            joinColumns = @JoinColumn(name = "SHIFT_ID", referencedColumnName="SHIFT_ID"),
+            inverseJoinColumns = @JoinColumn(name  = "TOURNEE_ID",referencedColumnName="TOURNEE_ID")
+    )
+
     private List<Tournee> tournees;
     
     @ManyToOne
@@ -67,6 +92,7 @@ public class Shift implements Serializable {
         this.id = id;
     }
 
+
     public long getTempsMort() {
         return tempsMort;
     }
@@ -90,6 +116,7 @@ public class Shift implements Serializable {
     public void setSolution(Solution solution) {
         this.solution = solution;
     }
+
 
     /* E Q U A L S   E T   H A S H C O D E */    
     @Override
@@ -124,9 +151,13 @@ public class Shift implements Serializable {
     }
     
     /* M E T H O D S */
-    public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
+
+        public boolean ajouterTournee (Tournee tournee, long dureeMin, long dureeMax) {
         int index = 0;
+        this.trier();
         if (!this.tournees.isEmpty()) {
+            if( this.duree() > dureeMax)
+                return false;
             Tournee tourneePrecedente = this.getTournees().get(0);
             // On vérifie si on peut l'ajouter en premier
             if (tournee.getFin().getTime() < tourneePrecedente.getDebut().getTime()) {
@@ -150,12 +181,14 @@ public class Shift implements Serializable {
                 // On insÃ¨re la tournÃ©e dans la liste
                 this.tournees.add(tournee);
                 this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+
                 return true;
             }
             return false;
         }
         this.tournees.add(tournee);
         this.calcTempsMort((int) dureeMin); // mise à jour du temps mort à chaque ajout de tournee
+        this.trier();
         return true;
     }
     
@@ -208,19 +241,29 @@ public class Shift implements Serializable {
         return (int) (t/60/1000) ;
     }
     
+    public void trier () {
+        Collections.sort(tournees, new Comparator<Tournee>() {
+            @Override
+            public int compare(Tournee t1, Tournee t2) {
+                return t1.getDebut().compareTo(t2.getDebut());
+            }
+        });
+    }
+    
     public static void main(String[] args) throws ReaderException {
         boolean ajout = false;
         
         Solution s = new Solution();
         Solution s1 = new Solution();
-        s.ajouterInstance("./resources/instances/instance_3.csv");
-        s1.ajouterInstance("./resources/instances/instance_3.csv");
-        Instance i = s.getInstances().get(0);
-        Instance i1 = s1.getInstances().get(0);
+        InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
+        s.ajouterInstance(ir.readInstance());
+        s1.ajouterInstance(ir.readInstance());
+        Instance i = s.getInstance();
+        Instance i1 = s1.getInstance();
         i.trier();
         i1.trier();
-        s.ajouterShift(new Shift());
-        s1.ajouterShift(new Shift());
+        //s.ajouterShift(new Shift());
+        //s1.ajouterShift(new Shift());
         for(Tournee t : i.getTournees()){
             ajout = false;
             for (Shift sh : s.getShifts()) {
@@ -256,7 +299,7 @@ public class Shift implements Serializable {
         
         System.out.println(s);
         System.out.println(s1);
-        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
-        System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes");
+        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes");
+        System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes");
     }        
 }
