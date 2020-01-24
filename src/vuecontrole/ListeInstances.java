@@ -566,7 +566,6 @@ public class ListeInstances extends javax.swing.JFrame {
             jPanel1.add(chartPanel);
 
             sommeTempsMort.setText(""+s.calcTempsMortTotal());
-            
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed

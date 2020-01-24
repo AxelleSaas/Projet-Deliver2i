@@ -217,58 +217,46 @@ public class Solution implements Serializable {
         return tempsMort;
     }
 
-    public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
-        final EntityManager em = emf.createEntityManager();
-        try{
-            final EntityTransaction et = em.getTransaction();
-            try{
-                et.begin();
-                Solution s = new Solution();
-                Solution s1 = new Solution();
-                Solution s2 = new Solution();
-                InstanceReader ir = new InstanceReader("./resources/instances/instance_1.csv");
-                s.ajouterInstance(ir.readInstance());
-                s1.ajouterInstance(ir.readInstance());
-                s2.ajouterInstance(ir.readInstance());
-                s.solutionTriviale();
-                s1.solutionBasique();
-                s2.solutionIntermediaire();
-                System.out.println(s2.getShifts());
-                int duree = 0;
-                int duree1 = 0;
-                int duree2 = 0;
-                for (Shift sh : s.getShifts()) {
-                    for (Tournee t : sh.getTournees()) 
-                        duree += t.duree();
-                }
-                for (Shift sh : s1.getShifts()) {
-                    for (Tournee t : sh.getTournees()) 
-                        duree1 += t.duree();
-                }
-                for (Shift sh : s2.getShifts()) {
-                    for (Tournee t : sh.getTournees()) 
-                        duree2 += t.duree();
-                }
-                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
-              
-                em.persist(s);
-                et.commit();
-            }
-            catch (Exception ex) {
-                et.rollback();
-            }
-        } 
-        finally {
-            if(em != null && em.isOpen()){
-                em.close();
-            }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
+    public static void main(String[] args) throws ReaderException {
+        Solution s = new Solution();
+        Solution s1 = new Solution();
+        Solution s2 = new Solution();
+        InstanceReader ir = new InstanceReader("./resources/instances/instance_1.csv");
+        Instance i = ir.readInstance();
+        s.ajouterInstance(i);
+        s1.ajouterInstance(i);
+        s2.ajouterInstance(i);
+        s.solutionTriviale();
+        s1.solutionBasique();
+        s2.solutionIntermediaire();
+        System.out.println(s2.getShifts());
+        int duree = 0;
+        int duree1 = 0;
+        int duree2 = 0;
+        for (Shift sh : s.getShifts()) {
+            for (Tournee t : sh.getTournees()) 
+                duree += t.duree();
         }
+        for (Shift sh : s1.getShifts()) {
+            for (Tournee t : sh.getTournees()) 
+                duree1 += t.duree();
+        }
+        for (Shift sh : s2.getShifts()) {
+            for (Tournee t : sh.getTournees()) 
+                duree2 += t.duree();
+        }
+        System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree1+")");
+        System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
+        for (Shift sh : s2.getShifts())
+            System.out.println(sh.getTempsMort());
+        System.out.println("nombre de tournées à traiter : " + s2.getInstance().getTournees().size());
+        int nombreTournees = 0;
+        for(Shift shi : s2.getShifts()) {
+            nombreTournees += shi.getTournees().size();
+        }
+        System.out.println("nombre de tournées traitées : "+ nombreTournees);
+        System.out.println("nombre de shifts : "+ s2.getShifts().size());
+        System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal() + " minutes (le temps utile total est de "+duree+")");
     }
 }
 
