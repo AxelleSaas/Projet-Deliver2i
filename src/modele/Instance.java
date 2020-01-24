@@ -23,7 +23,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -32,7 +31,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- *
+ * Cette classe permet de créer des objets Instance qui contiennent les données nécessaires à la création d'une solution 
+ * (durée minimale, durée maximale, liste de tournées).
  * @author Axelle
  */
 @NamedQueries({
@@ -151,8 +151,6 @@ public class Instance implements Serializable {
         this.solutions = solutions;
     }
 
-    
-    
 
     /* E Q U A L S   E T   H A S H C O D E */
     @Override
@@ -204,6 +202,9 @@ public class Instance implements Serializable {
     }
 
     /* M E T H O D S */
+    /**
+     * Permet de trier les tournées de l'instance dans l'ordre de commencement des tournées.
+     */
     
     public void trierTournees () {
         Collections.sort(tournees, new Comparator<Tournee>() {

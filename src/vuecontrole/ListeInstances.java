@@ -14,15 +14,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import metier.RequetePlanning;
 import modele.Instance;
 import modele.Shift;
@@ -39,16 +37,18 @@ import org.jfree.data.gantt.TaskSeries;
 import org.jfree.data.gantt.TaskSeriesCollection;
 
 /**
+ * Cette classe permet d'afficher une fenêtre servant de tableau de bord à l'opérateur qui souhaite consulter les instances.
  * @author Axelle
  */
 public class ListeInstances extends javax.swing.JFrame {
-    /**
-     * Creates new form ListeInstances
-     */
+
     
     private RequetePlanning requetePlanning;
     private int page;
   
+    /**
+     * Constructeur par défaut de la page. Il permet d'initialiser les élements de la fenêtre ainsi que la connexion à la base de données.
+     */
     public ListeInstances() {
         this.page =0;
         initConnexion();
@@ -58,10 +58,16 @@ public class ListeInstances extends javax.swing.JFrame {
         this.remplirListeSolution();
     }
     
+    /**
+     * Création d'une instance de RequetePlanning pour cette fenêtre.
+     */
     private void initConnexion() {
         this.requetePlanning = requetePlanning.getInstance();
     }
 
+    /**
+     * Initialisation des éléments de la fenêtre.
+     */
     private void initialisationFenetre(){
         this.setVisible(true);
         this.setLocation(0, 0);
@@ -73,20 +79,29 @@ public class ListeInstances extends javax.swing.JFrame {
         listeSolutions.addItem("Solution intermediaire");
     }
        
+    /**
+     * Récupération des instances enregistrées dans la base de données et ajout dans une JList.
+     */
     private void remplirListeInstances() {
+        
         DefaultListModel list = new DefaultListModel();
         listeInstancesSauv.setModel(list);
+        
         EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
+        
         try{
            Query query = em.createNamedQuery("Instance.findAll");
            List<Instance> listeObjInstance = query.getResultList();
+           
            for(Instance i : listeObjInstance) {
                Query query2 = em.createNamedQuery("Tournee.getTourneeByInstanceId");
                query2.setParameter("id", i);
                List<Tournee> listeTournee = query2.getResultList();
+               
                for(Tournee t : listeTournee){
                    i.getTournees().add(t);
                }
+               
                list.addElement(i);
                listeInstancesSauv.setModel(list);
            }
@@ -98,53 +113,71 @@ public class ListeInstances extends javax.swing.JFrame {
         }
     }
     
- private IntervalCategoryDataset getCategoryDataset(Solution s, int page) {
-     
-          int j =0;
-          int numShift = 40*page;
-          TaskSeries serie = new TaskSeries("Tournées");
-          Date datedebut = new Date(0);
-          Date datefin = new Date(86400000);
+    /**
+     * Créer un ensemble de données permettant d'afficher les shifts sous forme d'un diagramme de Gantt
+     * @param s solution à afficher
+     * @param page numéro de la page à afficher
+     * @return dataset données qui serviront à générer un diagramme
+     */
+    private IntervalCategoryDataset getCategoryDataset(Solution s, int page) {
 
-          
-          for(int i=40*page; i<40*page+40;i++){
-              if(i > s.getShifts().size()-1)
-                  break;
-              Shift shift = s.getShifts().get(i);
-              String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
-                    final Task t = new Task(name, datedebut,  datefin);
-                    shift.trierTournees();
-                    for(Tournee tournee : shift.getTournees()){
-                              final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
-                              st.setPercentComplete(1.0);
-                              t.addSubtask(st);
-                              int index = shift.getTournees().indexOf(tournee);
-                              if(index != 0){
-                                        if(!tournee.getDebut().equals(shift.getTournees().get(index).getFin())) {
-                                        final Task st2 = new Task(name, new Date (shift.getTournees().get(index-1).getFin().getTime() +1), new Date (tournee.getDebut().getTime() - 1));
-                                        t.addSubtask(st2);
-                                        }
-                              }
+        int j =0;
+        int numShift = 40*page;
+        TaskSeries serie = new TaskSeries("Tournées");
+        Date datedebut = new Date(0);
+        Date datefin = new Date(86400000);
+
+
+        for(int i = 40*page; i < 40*page+40;  i++){ // page de 40 éléments
+            
+            if(i > s.getShifts().size()-1) // dépassement de la taille de la liste
+                break;
+            
+            Shift shift = s.getShifts().get(i);
+            String name = "Shift " + j + " : " + shift.getTempsMort() + "min";
+            final Task t = new Task(name, datedebut,  datefin); // task <=> shift
+            
+            shift.trier();
+            
+            for(Tournee tournee : shift.getTournees()){
+                final Task st = new Task(name, tournee.getDebut(), tournee.getFin()); // subtask <=> tournee
+                st.setPercentComplete(1.0); //affiche une barre verte représentant la tournee
+                t.addSubtask(st);
+                int index = shift.getTournees().indexOf(tournee);
+                if(index != 0){ //aficher les temps morts précédents les tournées
+                    if(!tournee.getDebut().equals(shift.getTournees().get(index).getFin())) {
+                        final Task st2 = new Task(name, new Date (shift.getTournees().get(index-1).getFin().getTime() +1), new Date (tournee.getDebut().getTime() - 1));
+                        t.addSubtask(st2);
                     }
-                    Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstance().getDureeMinimale()*60000);
-                    if(shift.getTournees().get(shift.getTournees().size()-1).getFin().before(dateFinMinimum) ){
-                              final Task st3 = new Task(name, shift.getTournees().get(shift.getTournees().size()-1).getFin(), dateFinMinimum);
-                              t.addSubtask(st3);
-                    }
-                    serie.add(t);
-                     j++;
-                     numShift++;
-                     System.out.println(numShift);
-          }
-          
-          final TaskSeriesCollection dataset = new TaskSeriesCollection();
-          dataset.add(serie);
-          return dataset;
+                }
+            }
+            
+            Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstance().getDureeMinimale()*60000);
+            
+            if(shift.getTournees().get(shift.getTournees().size()-1).getFin().before(dateFinMinimum) ){ // affiche le temps mort suivant le dernier shift
+                final Task st3 = new Task(name, shift.getTournees().get(shift.getTournees().size()-1).getFin(), dateFinMinimum);
+                t.addSubtask(st3);
+            }
+            
+            serie.add(t);
+            j++;
+            numShift++;
+        }
+
+        final TaskSeriesCollection dataset = new TaskSeriesCollection();
+        dataset.add(serie);
+        
+        return dataset;
      }
      
+    /**
+     *  Récupération des solutions enregistrées dans la base de données et ajout dans une JList. 
+     */
      private void remplirListeSolution() {
+         
         DefaultListModel list = new DefaultListModel();
         listeSolution.setModel(list);
+        
         EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
         try{
             
@@ -161,7 +194,7 @@ public class ListeInstances extends javax.swing.JFrame {
                    
                     s.getShifts().add(shift);
                }
-               //System.out.println(s.getShifts());
+               
                list.addElement(s);
                listeSolution.setModel(list);
            }
@@ -200,6 +233,11 @@ public class ListeInstances extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         left = new javax.swing.JButton();
         right = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        sommeTempsMort = new javax.swing.JLabel();
+        labelNumPage = new javax.swing.JLabel();
+        labelNbPages = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1920, 1080));
@@ -277,6 +315,16 @@ public class ListeInstances extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setText("Somme des temps morts :");
+
+        sommeTempsMort.setText("0");
+
+        labelNumPage.setText("0");
+
+        labelNbPages.setText("0");
+
+        jLabel7.setText("/");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -305,7 +353,12 @@ public class ListeInstances extends javax.swing.JFrame {
                                             .addComponent(supprimerInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(187, 187, 187)
-                                        .addComponent(left))))
+                                        .addComponent(left))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(18, 18, 18)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(sommeTempsMort)
+                                            .addComponent(jLabel4)))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(6, 6, 6)
                                 .addComponent(jLabel3))))
@@ -317,6 +370,14 @@ public class ListeInstances extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(right)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(labelNumPage)
+                .addGap(12, 12, 12)
+                .addComponent(jLabel7)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelNbPages)
+                .addGap(646, 646, 646))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -342,15 +403,21 @@ public class ListeInstances extends javax.swing.JFrame {
                                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(layout.createSequentialGroup()
+                                                .addGap(114, 114, 114)
+                                                .addComponent(left))
+                                            .addGroup(layout.createSequentialGroup()
                                                 .addGap(3, 3, 3)
                                                 .addComponent(jLabel3)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(18, 18, 18)
-                                                .addComponent(afficherSolution))
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addGap(114, 114, 114)
-                                                .addComponent(left))))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(jLabel4)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(sommeTempsMort))
+                                                    .addGroup(layout.createSequentialGroup()
+                                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(18, 18, 18)
+                                                        .addComponent(afficherSolution))))))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(ajoutInstance)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -358,14 +425,26 @@ public class ListeInstances extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(427, 427, 427)
                         .addComponent(right)))
-                .addContainerGap(510, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 488, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelNumPage)
+                    .addComponent(labelNbPages)
+                    .addComponent(jLabel7))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Ouvre un gestionnaire de fichiers, afin de charger une instance sous format csv et l'ajouter à la base de données.
+     * @param evt 
+     */
     private void ajoutInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajoutInstanceActionPerformed
+
+        FileNameExtensionFilter filter =   new FileNameExtensionFilter("csv", "csv");       
         JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(filter);
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
             String chemin = chooser.getSelectedFile().getAbsolutePath();
             try{
@@ -380,8 +459,12 @@ public class ListeInstances extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_ajoutInstanceActionPerformed
 
+    /**
+     * Ajoute une solution si une instance est sélectionnée. La solution produite dépend du type d'algorithme de solution
+     * utilisé.
+     * @param evt 
+     */
     private void ajoutSolutionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ajoutSolutionActionPerformed
-        // TODO add your handling code here:
         if(!listeInstancesSauv.isSelectionEmpty()){
             
             switch(listeSolutions.getItemAt(listeSolutions.getSelectedIndex())){
@@ -399,7 +482,7 @@ public class ListeInstances extends javax.swing.JFrame {
                             s.ajouterInstance(i1);
 
                             s.solutionIntermediaire();
-                            System.out.println(s);
+                            
                             em2.persist(s);
                             et2.commit();
                             JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
@@ -428,7 +511,7 @@ public class ListeInstances extends javax.swing.JFrame {
                             s.ajouterInstance(i1);
 
                             s.solutionBasique();
-                            System.out.println(s);
+                            
                             em1.persist(s);
                             et1.commit();
                             JOptionPane.showMessageDialog(rootPane, "Ajout le solution réussi.");
@@ -477,6 +560,10 @@ public class ListeInstances extends javax.swing.JFrame {
         } 
     }//GEN-LAST:event_ajoutSolutionActionPerformed
 
+    /**
+     * Supprime une instance de la BDD.
+     * @param evt 
+     */
     private void supprimerInstanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_supprimerInstanceActionPerformed
          if(!listeInstancesSauv.isSelectionEmpty()){
             EntityManager em = this.requetePlanning.getEntityManagerFactory().createEntityManager();
@@ -503,28 +590,32 @@ public class ListeInstances extends javax.swing.JFrame {
          }
     }//GEN-LAST:event_supprimerInstanceActionPerformed
 
+    /**
+     * Affiche le diagramme de la solution (shift et tournées).
+     * @param evt 
+     */
     private void afficherSolutionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_afficherSolutionActionPerformed
-        // TODO add your handling code here:
         if(!listeSolution.isSelectionEmpty()){
             
             Object obj = listeSolution.getSelectedValue();
             Solution s = (Solution)obj;
             this.page = 0;
 
+            labelNumPage.setText(""+this.page);
+            labelNbPages.setText(""+(s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40);
+                
             final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
 
-            // create the chart...
             final JFreeChart chart = ChartFactory.createGanttChart(
-                "",  // chart title
-                "Task",              // domain axis label
-                "Date",              // range axis label
-                dataset,             // data
-                false,                // include legend
-                true,                // tooltips
-                false                // urls
+                "",  // titre
+                "",          // axe y
+                "Date",    // axe x
+                dataset,      
+                false,                // légende
+                true,               
+                false                
             );
             final CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            //      plot.getDomainAxis().setMaxCategoryLabelWidthRatio(10.0f);
             final CategoryItemRenderer renderer = plot.getRenderer();
             renderer.setSeriesPaint(0, Color.blue);
 
@@ -535,32 +626,38 @@ public class ListeInstances extends javax.swing.JFrame {
             jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
             jPanel1.add(chartPanel);
 
+            sommeTempsMort.setText(""+s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
+            System.out.println(s.calcTempsMortTotal(s.getInstance().getDureeMinimale()));
             this.revalidate();
         }
     }//GEN-LAST:event_afficherSolutionActionPerformed
 
+    /**
+     * Affiche les 40 shifts précédents.
+     * @param evt 
+     */
     private void leftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leftActionPerformed
-        // TODO add your handling code here:
-        // TODO add your handling code here:
+
         if(!listeSolution.isSelectionEmpty() && this.page!=0){
             Object obj = listeSolution.getSelectedValue();
             Solution s = (Solution)obj;
             this.page = this.page-1;
-            System.out.println(this.page);
+            
+            labelNumPage.setText(""+this.page);
+            labelNbPages.setText(""+(s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40);
+            
             final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
 
-            // create the chart...
             final JFreeChart chart = ChartFactory.createGanttChart(
-                "",  // chart title
-                "Task",              // domain axis label
-                "Date",              // range axis label
-                dataset,             // data
-                false,                // include legend
-                true,                // tooltips
-                false                // urls
+                "",  
+                "",             
+                "Date",            
+                dataset,         
+                false,                
+                true,               
+                false              
             );
             final CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            //      plot.getDomainAxis().setMaxCategoryLabelWidthRatio(10.0f);
             final CategoryItemRenderer renderer = plot.getRenderer();
             renderer.setSeriesPaint(0, Color.blue);
 
@@ -576,45 +673,52 @@ public class ListeInstances extends javax.swing.JFrame {
         
     }//GEN-LAST:event_leftActionPerformed
 
+    /**
+     * Affiche les 40 shifts suivants.
+     * @param evt 
+     */
     private void rightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rightActionPerformed
-        // TODO add your handling code here:
         if(!listeSolution.isSelectionEmpty()){
             Object obj = listeSolution.getSelectedValue();
             Solution s = (Solution)obj;
             
-            System.out.println((s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40);
             if(this.page < (s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40 ){
-            this.page = this.page+1;
-            System.out.println(this.page);
-            final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
+                this.page = this.page+1;
+            
+                labelNumPage.setText(""+this.page);
+                labelNbPages.setText(""+(s.getShifts().size() - 1 - (s.getShifts().size()-1)%40)/40);
+                
+                final IntervalCategoryDataset dataset = getCategoryDataset(s,this.page);
 
-            // create the chart...
-            final JFreeChart chart = ChartFactory.createGanttChart(
-                "",  // chart title
-                "Task",              // domain axis label
-                "Date",              // range axis label
-                dataset,             // data
-                false,                // include legend
-                true,                // tooltips
-                false                // urls
-            );
-            final CategoryPlot plot = (CategoryPlot) chart.getPlot();
-            //      plot.getDomainAxis().setMaxCategoryLabelWidthRatio(10.0f);
-            final CategoryItemRenderer renderer = plot.getRenderer();
-            renderer.setSeriesPaint(0, Color.blue);
+                final JFreeChart chart = ChartFactory.createGanttChart(
+                    "",  
+                    "",        
+                    "Date",   
+                    dataset,       
+                    false,           
+                    true,         
+                    false           
+                );
+                final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+                final CategoryItemRenderer renderer = plot.getRenderer();
+                renderer.setSeriesPaint(0, Color.blue);
 
-            final ChartPanel chartPanel = new ChartPanel(chart);
+                final ChartPanel chartPanel = new ChartPanel(chart);
 
-            chartPanel.setPreferredSize(new java.awt.Dimension(jPanel1.getWidth(), jPanel1.getHeight()));
-            jPanel1.removeAll();
-            jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-            jPanel1.add(chartPanel);
+                chartPanel.setPreferredSize(new java.awt.Dimension(jPanel1.getWidth(), jPanel1.getHeight()));
+                jPanel1.removeAll();
+                jPanel1.setLayout(new FlowLayout(FlowLayout.LEFT));
+                jPanel1.add(chartPanel);
 
-            this.revalidate();
+                this.revalidate();
             }
         }
     }//GEN-LAST:event_rightActionPerformed
 
+    /**
+     * Ferme l'entity manager factory lors de la fermeture de la fenêtre.
+     * @param evt 
+     */
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         this.requetePlanning.close();
     }//GEN-LAST:event_formWindowClosed
@@ -662,15 +766,20 @@ public class ListeInstances extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel labelNbPages;
+    private javax.swing.JLabel labelNumPage;
     private javax.swing.JButton left;
     private javax.swing.JList<String> listeInstancesSauv;
     private javax.swing.JList<String> listeSolution;
     private javax.swing.JComboBox<String> listeSolutions;
     private javax.swing.JButton right;
+    private javax.swing.JLabel sommeTempsMort;
     private javax.swing.JButton supprimerInstance;
     // End of variables declaration//GEN-END:variables
 }
