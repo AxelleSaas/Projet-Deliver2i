@@ -353,7 +353,7 @@ public class ListeInstances extends javax.swing.JFrame {
 
                             s.ajouterInstance(i1);
 
-                            s.solutionIntermediaire(0);
+                            s.solutionIntermediaire();
                             System.out.println(s);
                             em2.persist(s);
                             et2.commit();
@@ -386,7 +386,7 @@ public class ListeInstances extends javax.swing.JFrame {
 
                             s.ajouterInstance(i1);
 
-                            s.solutionBasique(0);
+                            s.solutionBasique();
                             System.out.println(s);
                             em1.persist(s);
                             et1.commit();

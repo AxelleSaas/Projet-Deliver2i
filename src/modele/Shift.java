@@ -258,8 +258,8 @@ public class Shift implements Serializable {
         InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
         s.ajouterInstance(ir.readInstance());
         s1.ajouterInstance(ir.readInstance());
-        Instance i = s.getInstances().get(0);
-        Instance i1 = s1.getInstances().get(0);
+        Instance i = s.getInstance();
+        Instance i1 = s1.getInstance();
         i.trier();
         i1.trier();
         //s.ajouterShift(new Shift());

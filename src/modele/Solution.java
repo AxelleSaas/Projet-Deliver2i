@@ -120,32 +120,7 @@ public class Solution implements Serializable {
         return "Solution " + this.id;
     }
     
-    /* M E T H O D S */
-    public void solutionTriviale(){
-        for(Tournee t : this.instance.getTournees()){
-            Shift s = new Shift();
-            t.getShifts().add(s);
-            s.ajouterTournee(t, this.instance.getDureeMinimale(), this.instance.getDureeMaximale());
-            
-            this.ajouterShift(s);
-        }
-    }
-    
-    public void solution1(Instance i){
-        int j = 0;
-        for(Tournee t : i.getTournees()){
-            if(i.getTournees().indexOf(t) == 0){
-                Shift s = new Shift();
-                t.getShifts().add(s);
-                s.ajouterTournee(t, i.getDureeMinimale(), i.getDureeMaximale());
-                this.ajouterShift(s);
-                j++;
-            }
-            Date dateDerniereTourne = this.getShifts().get(j).getTournees().get( this.getShifts().get(j).getTournees().size()-1).getFin();
-
-        }
-    }
-    
+    /* M E T H O D S */ 
     public void ajouterInstance(Instance i){
             this.instance = i;
             i.getSolutions().add(this);
@@ -156,8 +131,17 @@ public class Solution implements Serializable {
         this.shifts.add(s);
     }
     
-
-    public void solutionBasique(int indexInstance){
+    public void solutionTriviale(){
+        for(Tournee t : this.instance.getTournees()){
+            Shift s = new Shift();
+            t.getShifts().add(s);
+            s.ajouterTournee(t, this.instance.getDureeMinimale(), this.instance.getDureeMaximale());
+            
+            this.ajouterShift(s);
+        }
+    }
+    
+    public void solutionBasique(){
         boolean ajout = false;
         
         Instance instance = this.instance;
@@ -183,7 +167,7 @@ public class Solution implements Serializable {
         System.out.println(this.shifts);
     }
     
-    public void solutionIntermediaire(int indexInstance){
+    public void solutionIntermediaire(){
         boolean ajout = false;
         
         Instance instance = this.instance;
@@ -242,9 +226,9 @@ public class Solution implements Serializable {
                 s.ajouterInstance(ir.readInstance());
                 s1.ajouterInstance(ir.readInstance());
                 s2.ajouterInstance(ir.readInstance());
-                s.solutionTriviale(0);
-                s1.solutionBasique(0);
-                s2.solutionIntermediaire(0);
+                s.solutionTriviale();
+                s1.solutionBasique();
+                s2.solutionIntermediaire();
                 System.out.println(s2.getShifts());
                 int duree = 0;
                 int duree1 = 0;
@@ -261,9 +245,9 @@ public class Solution implements Serializable {
                     for (Tournee t : sh.getTournees()) 
                         duree2 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
               
                 em.persist(s);
                 et.commit();

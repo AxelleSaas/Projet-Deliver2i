@@ -34,25 +34,25 @@ public class Test1 {
                 s1.ajouterInstance(ir.readInstance());
                 s2.ajouterInstance(ir.readInstance());
                 
-                s.solutionBasique(0);
-                s1.solutionTriviale(0);
+                s.solutionBasique();
+                s1.solutionTriviale();
                 //s2.solutionIntermediaire(0);
                 System.out.println(s.getShifts());
                 int duree = 0;
                 int duree1 = 0;
                 int duree2 = 0;
-                for (Tournee t : s.getInstances().get(0).getTournees()) {
+                for (Tournee t : s.getInstance().getTournees()) {
                     duree += t.duree();
                 }
-                for (Tournee t : s1.getInstances().get(0).getTournees()) {
+                for (Tournee t : s1.getInstance().getTournees()) {
                     duree1 += t.duree();
                 }
-                for (Tournee t : s2.getInstances().get(0).getTournees()) {
+                for (Tournee t : s2.getInstance().getTournees()) {
                     duree1 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree2+")");
+                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree2+")");
 
                 em.persist(s);
                 et.commit();

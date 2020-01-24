@@ -53,7 +53,7 @@ public class AffichageSolution extends javax.swing.JFrame {
          
         System.out.println(s.getShifts());
         
-        Date datedebut = new Date(s.getInstances().get(0).getTournees().get(0).getDebut().getTime() - 60000);
+        Date datedebut = new Date(s.getInstance().getTournees().get(0).getDebut().getTime() - 60000);
         Date datefin = new Date(86400000);
         int j =0;
         for(Shift shift : s.getShifts()){
@@ -73,7 +73,7 @@ public class AffichageSolution extends javax.swing.JFrame {
                   }
 
               }
-              Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstances().get(0).getDureeMinimale()*60000);
+              Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstance().getDureeMinimale()*60000);
               if(shift.getTournees().get(shift.getTournees().size()-1).getFin().before(dateFinMinimum) ){
                   final Task st3 = new Task(name, shift.getTournees().get(shift.getTournees().size()-1).getFin(), dateFinMinimum);
                       t.addSubtask(st3);
