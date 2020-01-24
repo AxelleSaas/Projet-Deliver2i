@@ -39,8 +39,10 @@ public class RequetePlanning {
     }
     
     public static RequetePlanning getInstance() {
-        if(instance == null)
+        if(instance == null) {
             instance = new RequetePlanning();
+            System.out.println("On créé un co la");
+        }
         return instance;
     }  
     

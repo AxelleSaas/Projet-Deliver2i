@@ -11,6 +11,9 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.security.Provider.Service;
+import metier.RequetePlanning;
+import modele.Instance;
+import modele.Shift;
 import modele.Solution;
 import modele.Tournee;
 
@@ -20,8 +23,8 @@ import modele.Tournee;
  */
 public class Test1 {
     public static void main(String[] args) {
-        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
-        final EntityManager em = emf.createEntityManager();
+        RequetePlanning requetePlanning = RequetePlanning.getInstance();
+        EntityManager em = requetePlanning.getEntityManagerFactory().createEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();
             try{
@@ -29,32 +32,39 @@ public class Test1 {
                 Solution s = new Solution();
                 Solution s1 = new Solution();
                 Solution s2 = new Solution();
-                InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
-                s.ajouterInstance(ir.readInstance());
-                s1.ajouterInstance(ir.readInstance());
-                s2.ajouterInstance(ir.readInstance());
-                
-                s.solutionBasique();
-                s1.solutionTriviale();
-                //s2.solutionIntermediaire(0);
-                System.out.println(s.getShifts());
+                InstanceReader ir = new InstanceReader("./resources/instances/instance_1.csv");
+                Instance i = ir.readInstance();
+                em.persist(i);
+                s.ajouterInstance(i);
+                s1.ajouterInstance(i);
+                s2.ajouterInstance(i);
+                s.solutionTriviale();
+                s1.solutionBasique();
+                s2.solutionIntermediaire();
+                em.persist(s);
+                em.persist(s1);
+                em.persist(s2);
+                System.out.println(s2.getShifts());
                 int duree = 0;
                 int duree1 = 0;
                 int duree2 = 0;
-                for (Tournee t : s.getInstance().getTournees()) {
-                    duree += t.duree();
+                for (Shift sh : s.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree += t.duree();
                 }
-                for (Tournee t : s1.getInstance().getTournees()) {
-                    duree1 += t.duree();
+                for (Shift sh : s1.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree1 += t.duree();
                 }
-                for (Tournee t : s2.getInstance().getTournees()) {
-                    duree1 += t.duree();
+                for (Shift sh : s2.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree2 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree2+")");
-
-                em.persist(s);
+                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+              
+                em.persist(s2);
                 et.commit();
             }
             catch (Exception ex) {
@@ -65,9 +75,7 @@ public class Test1 {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            if(emf != null && emf.isOpen()){
-                emf.close();
-            }
+            requetePlanning.close();
         }
     }
 }
