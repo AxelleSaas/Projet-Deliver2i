@@ -47,10 +47,7 @@ public class ListeInstances extends javax.swing.JFrame {
      */
     
     private RequetePlanning requetePlanning;
-<<<<<<< HEAD
     private int page;
-=======
->>>>>>> origin/master
   
     public ListeInstances() {
         this.page =0;
