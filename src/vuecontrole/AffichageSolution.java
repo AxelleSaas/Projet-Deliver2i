@@ -51,29 +51,42 @@ public class AffichageSolution extends javax.swing.JFrame {
      
          TaskSeries serie = new TaskSeries("Tournées");
          
-         System.out.println(s.getShifts());
-         
-          Date datedebut = new Date(0);
-          Date datefin = new Date(86400000);
-            
-          System.out.println("Date debut : "+ datedebut);
-          System.out.println("Date fin : "+ datefin);
+        System.out.println(s.getShifts());
+        
+        Date datedebut = new Date(s.getInstances().get(0).getTournees().get(0).getDebut().getTime() - 60000);
+        Date datefin = new Date(86400000);
+        int j =0;
+        for(Shift shift : s.getShifts()){
+            String name = "shift" + j;
+              final Task t = new Task(name, datedebut,  datefin);
+                  shift.trier();
+              for(Tournee tournee : shift.getTournees()){
+                  final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
+                  st.setPercentComplete(1.0);
+                  t.addSubtask(st);
+                  int index = shift.getTournees().indexOf(tournee);
+                  if(index != 0){
+                      if(!tournee.getDebut().equals(shift.getTournees().get(index).getFin())) {
+                          final Task st2 = new Task(name, new Date (shift.getTournees().get(index-1).getFin().getTime() +1), new Date (tournee.getDebut().getTime() - 1));
+                          t.addSubtask(st2);
+                      }
+                  }
 
-              int j =0;
-          for(Shift shift : s.getShifts()){
-              String name = "shift" + j;
-                final Task t = new Task(name, datedebut,  datefin);
-                for(Tournee tournee : shift.getTournees()){
-                    final Task st = new Task(name, tournee.getDebut(), tournee.getFin());
-                    t.addSubtask(st);
-                }
-               serie.add(t);
-                j++;
-            }
-          
-          final TaskSeriesCollection dataset = new TaskSeriesCollection();
-          dataset.add(serie);
-          return dataset;
+              }
+              Date dateFinMinimum = new Date(shift.getTournees().get(0).getDebut().getTime() + shift.getSolution().getInstances().get(0).getDureeMinimale()*60000);
+              if(shift.getTournees().get(shift.getTournees().size()-1).getFin().before(dateFinMinimum) ){
+                  final Task st3 = new Task(name, shift.getTournees().get(shift.getTournees().size()-1).getFin(), dateFinMinimum);
+                      t.addSubtask(st3);
+              }
+
+             serie.add(t);
+              j++;
+          }
+
+        final TaskSeriesCollection dataset = new TaskSeriesCollection();
+        dataset.add(serie);
+        System.out.println();
+        return dataset;
      }
      
      private void remplirListeSolution() {

@@ -156,6 +156,8 @@ public class Shift implements Serializable {
         int index = 0;
         this.trier();
         if (!this.tournees.isEmpty()) {
+            if( this.duree() > dureeMax)
+                return false;
             Tournee tourneePrecedente = this.getTournees().get(0);
             // On vérifie si on peut l'ajouter en premier
             if (tournee.getFin().getTime() < tourneePrecedente.getDebut().getTime()) {
@@ -239,7 +241,7 @@ public class Shift implements Serializable {
         return (int) (t/60/1000) ;
     }
     
-        public void trier () {
+    public void trier () {
         Collections.sort(tournees, new Comparator<Tournee>() {
             @Override
             public int compare(Tournee t1, Tournee t2) {
@@ -253,10 +255,11 @@ public class Shift implements Serializable {
         
         Solution s = new Solution();
         Solution s1 = new Solution();
-       // s.ajouterInstance("./resources/instances/instance_3.csv");
-        //s1.ajouterInstance("./resources/instances/instance_3.csv");
-        Instance i = s.getInstance();
-        Instance i1 = s1.getInstance();
+        InstanceReader ir = new InstanceReader("./resources/instances/instance_test.csv");
+        s.ajouterInstance(ir.readInstance());
+        s1.ajouterInstance(ir.readInstance());
+        Instance i = s.getInstances().get(0);
+        Instance i1 = s1.getInstances().get(0);
         i.trier();
         i1.trier();
         //s.ajouterShift(new Shift());

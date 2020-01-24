@@ -188,26 +188,34 @@ public class Solution implements Serializable {
         
         Instance instance = this.instance;
         instance.trier();
-        
         this.ajouterShift(new Shift());
         for(Tournee t : this.instance.getTournees()){
             ajout = false;
             for (Shift s : this.getShifts()) {
-                // Si on l'ajoute, on arrete la boucle
-                if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
-                    ajout = true;
-                    break;
+                Tournee derniereTournee = new Tournee();
+                if (s.getTournees().isEmpty()) {
+                    if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
+                        ajout = true;
+                        break;
+                    }
+                }
+                derniereTournee = s.getTournees().get(s.getTournees().size() - 1);
+                if (!(Math.abs(t.getDebut().getTime()/60000 - derniereTournee.getFin().getTime()/60000) > 60)) {
+                    // Si on l'ajoute, on arrete la boucle
+                    if(s.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale())) {
+                        ajout = true;
+                        break;
+                    }
                 }
             }
-            
             // On n'a pû l'ajouter dans aucun shift
             if (!ajout) {
-                Shift sTemp = new Shift();
-                sTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
-                this.ajouterShift(sTemp);
+                Shift shTemp = new Shift();
+                shTemp.ajouterTournee(t, instance.getDureeMinimale(), instance.getDureeMaximale());
+                this.ajouterShift(shTemp);
             }
-            
         }
+        System.out.println(this.getShifts());
     }
     
     public int calcTempsMortTotal(int dureeMin){
@@ -221,30 +229,42 @@ public class Solution implements Serializable {
  
 
     public static void main(String[] args) {
-        RequetePlanning rp = RequetePlanning.getInstance();
-        EntityManager em = rp.getEntityManagerFactory().createEntityManager();
+        final EntityManagerFactory emf =Persistence.createEntityManagerFactory("Deliver2iPU");
+        final EntityManager em = emf.createEntityManager();
         try{
             final EntityTransaction et = em.getTransaction();
             try{
                 et.begin();
                 Solution s = new Solution();
                 Solution s1 = new Solution();
-               // s.ajouterInstance("./resources/instances/instance_1.csv");
-                //s1.ajouterInstance("./resources/instances/instance_1.csv");
-               // s.solutionBasique(0);
-               // s1.solutionTriviale(0);
-               // System.out.println(s);
+                Solution s2 = new Solution();
+                InstanceReader ir = new InstanceReader("./resources/instances/instance_1.csv");
+                s.ajouterInstance(ir.readInstance());
+                s1.ajouterInstance(ir.readInstance());
+                s2.ajouterInstance(ir.readInstance());
+                s.solutionTriviale(0);
+                s1.solutionBasique(0);
+                s2.solutionIntermediaire(0);
+                System.out.println(s2.getShifts());
                 int duree = 0;
                 int duree1 = 0;
-                for (Tournee t : s.getInstance().getTournees()) {
-                    duree += t.duree();
+                int duree2 = 0;
+                for (Shift sh : s.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree += t.duree();
                 }
-                for (Tournee t : s1.getInstance().getTournees()) {
-                    duree1 += t.duree();
+                for (Shift sh : s1.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree1 += t.duree();
                 }
-                System.out.println("Temps mort total obtenu en basique : " + s.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
-                System.out.println("Temps mort total obtenu en triviale : " + s1.calcTempsMortTotal(s.getInstance().getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
-                
+                for (Shift sh : s2.getShifts()) {
+                    for (Tournee t : sh.getTournees()) 
+                        duree2 += t.duree();
+                }
+                System.out.println("Temps mort total obtenu en triviale : " + s.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree1+")");
+                System.out.println("Temps mort total obtenu en basique : " + s1.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+                System.out.println("Temps mort total obtenu en intermediaire : " + s2.calcTempsMortTotal(s.getInstances().get(0).getDureeMinimale()) + " minutes (le temps utile total est de "+duree+")");
+              
                 em.persist(s);
                 et.commit();
             }
@@ -256,7 +276,9 @@ public class Solution implements Serializable {
             if(em != null && em.isOpen()){
                 em.close();
             }
-            rp.close();
+            if(emf != null && emf.isOpen()){
+                emf.close();
+            }
         }
     }
 }
